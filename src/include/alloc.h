@@ -154,7 +154,7 @@ ncclResult_t ncclCudaMallocDebug(T** ptr, size_t nelem, const char *filefunc, in
   if (ncclCuMemEnable()) {
     NCCLCHECKGOTO(ncclCuMemAlloc((void **)ptr, NULL, nelem*sizeof(T)), result, finish);
   } else {
-    CUDACHECKGOTO(cudaMalloc(ptr, nelem*sizeof(T)), result, finish);
+    CUDACHECKGOTO(tmsCudaMalloc(ptr, nelem*sizeof(T)), result, finish);
   }
 finish:
   CUDACHECK(cudaThreadExchangeStreamCaptureMode(&mode));
@@ -176,7 +176,7 @@ ncclResult_t ncclCudaCallocDebug(T** ptr, size_t nelem, const char *filefunc, in
   if (ncclCuMemEnable()) {
     NCCLCHECKGOTO(ncclCuMemAlloc((void **)ptr, NULL, nelem*sizeof(T)), result, finish);
   } else {
-    CUDACHECKGOTO(cudaMalloc(ptr, nelem*sizeof(T)), result, finish);
+    CUDACHECKGOTO(tmsCudaMalloc(ptr, nelem*sizeof(T)), result, finish);
   }
   CUDACHECKGOTO(cudaMemsetAsync(*ptr, 0, nelem*sizeof(T), stream), result, finish);
   CUDACHECKGOTO(cudaStreamSynchronize(stream), result, finish);
@@ -198,7 +198,7 @@ ncclResult_t ncclCudaCallocAsyncDebug(T** ptr, size_t nelem, cudaStream_t stream
   if (ncclCuMemEnable()) {
     NCCLCHECKGOTO(ncclCuMemAlloc((void **)ptr, NULL, nelem*sizeof(T)), result, finish);
   } else {
-    CUDACHECKGOTO(cudaMalloc(ptr, nelem*sizeof(T)), result, finish);
+    CUDACHECKGOTO(tmsCudaMalloc(ptr, nelem*sizeof(T)), result, finish);
   }
   CUDACHECKGOTO(cudaMemsetAsync(*ptr, 0, nelem*sizeof(T), stream), result, finish);
 finish:
@@ -245,7 +245,7 @@ ncclResult_t ncclCudaFree(T* ptr) {
   if (ncclCuMemEnable()) {
     NCCLCHECKGOTO(ncclCuMemFree((void *)ptr), result, finish);
   } else {
-    CUDACHECKGOTO(cudaFree(ptr), result, finish);
+    CUDACHECKGOTO(tmsCudaFree(ptr), result, finish);
   }
 finish:
   CUDACHECK(cudaThreadExchangeStreamCaptureMode(&mode));
