@@ -17,6 +17,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+// NOTE ADD
+cudaError_t tmsCudaMalloc(void **ptr, size_t size);
+cudaError_t tmsCudaFree(void *ptr);
+
 uint64_t clockNano(); // from utils.h with which we have a circular dependency
 
 template <typename T>
