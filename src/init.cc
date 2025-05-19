@@ -1770,7 +1770,7 @@ static ncclResult_t ncclCommInitRankDev(ncclComm_t* newcomm, int nranks, ncclUni
   if (myrank == 0) showVersion();
 
   // Make sure the CUDA runtime is initialized.
-  CUDACHECKGOTO(cudaFree(NULL), res, fail);
+  CUDACHECKGOTO(tmsCudaFree(NULL), res, fail);
 
   NCCLCHECKGOTO(PtrCheck(newcomm, "CommInitRank", "newcomm"), res, fail);
   NCCLCHECKGOTO(PtrCheck(config, "CommInitRank", "config"), res, fail);
@@ -2395,7 +2395,7 @@ ncclResult_t  ncclMemAlloc(void **ptr, size_t size) {
 
 fallback:
 #endif
-  CUDACHECKGOTO(cudaMalloc(ptr, size), ret, fail);
+  CUDACHECKGOTO(tmsCudaMalloc(ptr, size), ret, fail);
 
 exit:
   return ret;
@@ -2430,7 +2430,7 @@ ncclResult_t  ncclMemFree(void *ptr) {
 
 fallback:
 #endif
-  CUDACHECKGOTO(cudaFree(ptr), ret, fail);
+  CUDACHECKGOTO(tmsCudaFree(ptr), ret, fail);
 
 exit:
   cudaSetDevice(saveDevice);
