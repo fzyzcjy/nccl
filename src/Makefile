@@ -27,7 +27,10 @@ LIBDIR := $(BUILDDIR)/lib
 OBJDIR := $(BUILDDIR)/obj
 PKGDIR := $(BUILDDIR)/lib/pkgconfig
 ##### target files
-CUDARTLIB  ?= cudart_static
+
+# NOTE MODIFIED
+# CUDARTLIB  ?= cudart_static
+CUDARTLIB = cudart
 
 ifeq ($(CUDARTLIB), cudart_static)
 	# Use compatibility shim only with static cudart; see https://github.com/NVIDIA/nccl/issues/658
