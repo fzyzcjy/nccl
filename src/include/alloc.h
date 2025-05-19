@@ -206,7 +206,9 @@ ncclResult_t ncclCudaCallocAsyncDebug(T** ptr, size_t nelem, cudaStream_t stream
   if (ncclCuMemEnable()) {
     NCCLCHECKGOTO(ncclCuMemAlloc((void **)ptr, NULL, nelem*sizeof(T)), result, finish);
   } else {
-    CUDACHECKGOTO(tmsCudaMalloc(ptr, nelem*sizeof(T)), result, finish);
+    // NOTE add cast
+    // CUDACHECKGOTO(cudaMalloc(ptr, nelem*sizeof(T)), result, finish);
+    CUDACHECKGOTO(tmsCudaMalloc((void **)ptr, nelem*sizeof(T)), result, finish);
   }
   CUDACHECKGOTO(cudaMemsetAsync(*ptr, 0, nelem*sizeof(T), stream), result, finish);
 finish:
