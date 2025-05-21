@@ -11,7 +11,3 @@ override_dh_auto_test:
 
 override_dh_auto_clean:
 	# Do not make clean
-
-# NOTE MODIFIED ADD
-override_dh_shlibdeps:
-	dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info
