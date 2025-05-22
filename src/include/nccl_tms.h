@@ -14,6 +14,7 @@ struct NcclTmsRecord {
     size_t size;
     uint64_t initialRawCuDesc;
     NcclTmsIpcMode ipcMode;
+    void* cpuBackup;
 };
 
 class NcclTms {
