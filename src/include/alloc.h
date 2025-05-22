@@ -116,7 +116,7 @@ static inline ncclResult_t ncclCuMemAlloc(void **ptr, CUmemGenericAllocationHand
   if (handlep) *handlep = handle;
   TRACE(NCCL_ALLOC, "CuMem Alloc Size %zi pointer %p handle %llx", size, *ptr, handle);
 
-  NcclTms::instance().registerAlloc((void *)ptr, originalSize, 0, handle, NcclTmsIpcMode::LOCAL);
+  NcclTms::instance().registerAlloc(*ptr, originalSize, 0, handle, NcclTmsIpcMode::LOCAL);
 
   return result;
 }
@@ -133,6 +133,9 @@ static inline ncclResult_t ncclCuMemFree(void *ptr) {
   CUCHECK(cuMemUnmap((CUdeviceptr)ptr, size));
   CUCHECK(cuMemRelease(handle));
   CUCHECK(cuMemAddressFree((CUdeviceptr)ptr, size));
+
+  NcclTms::instance().registerDealloc(ptr);
+
   return result;
 }
 

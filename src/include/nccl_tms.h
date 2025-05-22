@@ -24,6 +24,7 @@ public:
     NcclTms();
     static NcclTms &instance();
     void registerAlloc(void* ptr, size_t size, uint64_t rawCuDesc, CUmemGenericAllocationHandle handle, NcclTmsIpcMode ipcMode);
+    void registerDealloc(void* ptr);
     void copyToHostAndReleaseA();
     void copyToHostAndReleaseB();
     char* getRecords();

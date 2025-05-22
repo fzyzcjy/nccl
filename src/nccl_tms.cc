@@ -90,6 +90,13 @@ void NcclTms::registerAlloc(void* ptr, size_t size, uint64_t rawCuDesc, CUmemGen
     }
 }
 
+void NcclTms::registerDealloc(void* ptr) {
+    const std::lock_guard<std::mutex> lock(primary_mutex_);
+
+    WARN("NcclTms::registerAlloc ptr=%p", ptr);
+    TODO;
+}
+
 void NcclTms::copyToHostAndReleaseA() {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
