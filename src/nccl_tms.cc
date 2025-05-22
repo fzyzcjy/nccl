@@ -50,7 +50,9 @@ void NcclTms::copyToHostAndReleaseB() {
     }
 }
 
-void NcclTms::resumeAndCopyToDeviceA() {
+char* NcclTms::resumeAndCopyToDeviceA() {
+    nlohmann::json output_json = nlohmann::json::array();
+
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
     for (size_t i = 0; i < records_.size(); ++i) {
@@ -98,9 +100,14 @@ void NcclTms::resumeAndCopyToDeviceA() {
                 CUCHECK(cuMemExportToShareableHandle(&fd, handle, type, 0));
             }
 
-            TODO_store_fd;
+            output_json.push_back({{"TODO", TODO}, {"fd", fd}});
         }
     }
+
+    std::string message = output_json.dump();
+    char* result = new char[message.size() + 1];
+    std::strcpy(result, message.c_str());
+    return result;
 }
 
 void NcclTms::resumeAndCopyToDeviceB() {
