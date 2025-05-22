@@ -6,6 +6,6 @@ enum NcclTmsIpcMode {
     IMPORT,
 };
 
-void ncclTmsRegister(void* ptr, size_t size, uint64_t shareableHandle, NcclTmsIpcMode ipcMode);
+void ncclTmsRegister(void* ptr, size_t size, uint64_t rawIpcDesc, NcclTmsIpcMode ipcMode);
 
 #endif
