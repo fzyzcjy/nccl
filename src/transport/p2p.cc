@@ -212,7 +212,7 @@ ncclResult_t ncclP2pAllocateShareableBuffer(size_t size, ncclIpcDesc *ipcDesc, v
       CUCHECK(cuMemExportToShareableHandle(&ipcDesc->cuDesc, handle, type, 0));
     }
 
-    NcclTmsImpl::instance().registerAlloc(*ptr, size, ipcDesc->cuDesc.data, NcclTmsIpcMode::EXPORTER);
+    NcclTms::instance().registerAlloc(*ptr, size, ipcDesc->cuDesc.data, NcclTmsIpcMode::EXPORTER);
 #else
     return ncclInternalError;
 #endif
