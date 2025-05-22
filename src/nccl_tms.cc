@@ -18,7 +18,11 @@ void NcclTms::copyToHostAndReleaseA() {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
     // copy to host
-    TODO
+    for (size_t i = 0; i < records_.size(); ++i) {
+        if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
+            TODO;
+        }
+    }
 
     // TODO improve all code, e.g. the `[i]
     for (size_t i = 0; i < records_.size(); ++i) {
