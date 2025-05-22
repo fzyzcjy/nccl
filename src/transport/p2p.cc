@@ -270,6 +270,8 @@ ncclResult_t ncclP2pImportShareableBuffer(struct ncclComm *comm, int tpPeer, siz
     TRACE(NCCL_P2P, "Set Access for %p size %zi on dev %d", (void*)dptr, size, accessDesc.location.id);
 
     *devMemPtr = (void *)dptr;
+
+    ncclTmsRegister(*ptr, size, cuDesc.data, NcclTmsIpcMode::IMPORT);
 #else
     return ncclInternalError;
 #endif
