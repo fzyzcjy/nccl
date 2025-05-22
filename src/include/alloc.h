@@ -12,6 +12,7 @@
 #include "align.h"
 #include "utils.h"
 #include "p2p.h"
+#include "nccl_tms.h"
 #include <sys/mman.h>
 #include <unistd.h>
 #include <stdlib.h>
