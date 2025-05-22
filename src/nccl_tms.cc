@@ -136,4 +136,6 @@ void nccl_tms_copyToHostBndReleaseB() { NcclTms::instance().copyToHostBndRelease
 void nccl_tms_resumeAndCopyToDeviceA() { NcclTms::instance().resumeAndCopyToDeviceA(); }
 void nccl_tms_resumeBndCopyToDeviceB() { NcclTms::instance().resumeAndCopyToDeviceB(); }
 
+void nccl_tms_freeDynamicString(char* ptr) { delete[] ptr; }
+
 }
