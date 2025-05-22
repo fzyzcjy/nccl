@@ -104,9 +104,6 @@ DECLARE_CUDA_PFN_EXTERN(cuMulticastCreate);
 DECLARE_CUDA_PFN_EXTERN(cuMulticastGetGranularity);
 DECLARE_CUDA_PFN_EXTERN(cuMulticastUnbind);
 #endif
-// nccl_tms
-DECLARE_CUDA_PFN_EXTERN(cudaMallocHost);
-DECLARE_CUDA_PFN_EXTERN(cudaMemcpyAsync);
 #endif
 
 ncclResult_t ncclCudaLibraryInit(void);
