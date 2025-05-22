@@ -9,6 +9,7 @@
 #include "utils.h"
 #include "shm.h"
 #include "p2p.h"
+#include "nccl_tms.h"
 
 enum p2pType { P2P_DIRECT, P2P_INTERMEDIATE, P2P_IPC, P2P_CUMEM };
 
@@ -210,6 +211,8 @@ ncclResult_t ncclP2pAllocateShareableBuffer(size_t size, ncclIpcDesc *ipcDesc, v
     } else {
       CUCHECK(cuMemExportToShareableHandle(&ipcDesc->cuDesc, handle, type, 0));
     }
+
+    ncclTmsRegister(*ptr, size, handle, NcclTmsIpcMode::EXPORT);
 #else
     return ncclInternalError;
 #endif
