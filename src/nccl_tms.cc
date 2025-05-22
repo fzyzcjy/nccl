@@ -91,9 +91,9 @@ void NcclTms::resumeAndCopyToDeviceA() {
             }
 
             // ref: proxyGetFd
+            int fd = -1;
             {
                 CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
-                int fd = -1;
                 CUCHECK(cuMemExportToShareableHandle(&fd, handle, type, 0));
             }
         }
