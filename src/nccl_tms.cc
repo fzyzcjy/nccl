@@ -1,13 +1,13 @@
 #include "tms.h"
 
-NcclTmsImpl::NcclTmsImpl() {}
+NcclTms::NcclTms() {}
 
 // 静态单例方法实现
-NcclTmsImpl& NcclTmsImpl::instance() {
-    static NcclTmsImpl instance;
+NcclTms& NcclTms::instance() {
+    static NcclTms instance;
     return instance;
 }
 
-void NcclTmsImpl::registerAlloc(void* ptr, size_t size, uint64_t rawIpcDesc, NcclTmsIpcMode ipcMode) {
+void NcclTms::registerAlloc(void* ptr, size_t size, uint64_t rawIpcDesc, NcclTmsIpcMode ipcMode) {
     TODO;
 }

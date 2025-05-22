@@ -13,10 +13,10 @@ struct NcclTmsRecord {
 
 };
 
-class NcclTmsImpl {
+class NcclTms {
 public:
-    NcclTmsImpl();
-    static NcclTmsImpl &instance();
+    NcclTms();
+    static NcclTms &instance();
     void registerAlloc(void* ptr, size_t size, uint64_t rawIpcDesc, NcclTmsIpcMode ipcMode);
 
 private:

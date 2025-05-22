@@ -271,7 +271,7 @@ ncclResult_t ncclP2pImportShareableBuffer(struct ncclComm *comm, int tpPeer, siz
 
     *devMemPtr = (void *)dptr;
 
-    NcclTmsImpl::get_instance().registerAlloc(*ptr, size, cuDesc.data, NcclTmsIpcMode::IMPORT);
+    NcclTms::get_instance().registerAlloc(*ptr, size, cuDesc.data, NcclTmsIpcMode::IMPORT);
 #else
     return ncclInternalError;
 #endif
