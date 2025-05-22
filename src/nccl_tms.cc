@@ -172,6 +172,7 @@ char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
                 /* Allocate the physical memory on the device */
                 CUCHECKEXIT(cuMemCreate(&handle, alignedSize, &prop, 0));
                 CUCHECKEXIT(cuMemMap((CUdeviceptr)records_[i].ptr, alignedSize, 0, handle, 0));
+                wrappedCuMemSetAccess(records_[i].ptr, alignedSize);
             }
 
             // ref: proxyGetFd
@@ -225,6 +226,7 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
             (void) close(senderPidFd); // can optimize (not open-close every time)
 
             CUCHECKEXIT(cuMemMap((CUdeviceptr)records_[i].ptr, alignedSize, /* offset */ 0, handle, /* flags */ 0));
+            wrappedCuMemSetAccess(records_[i].ptr, alignedSize);
         }
     }
 
