@@ -14,6 +14,14 @@
     }							      \
 } while(false)
 
+// NOTE MODIFIED from CUDACHECK
+#define CUDACHECKEXIT(cmd) do {                                 \
+    cudaError_t err = cmd;                                  \
+    if( err != cudaSuccess ) {                              \
+        WARN("Cuda failure '%s'", cudaGetErrorString(err)); \
+        exit(1);                      \
+    }                                                       \
+} while(false)
 
 NcclTms::NcclTms() {}
 
@@ -38,9 +46,9 @@ void NcclTms::copyToHostAndReleaseA() {
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
             if (records_[i].cpuBackup == nullptr) {
-                CUCHECK(cudaMallocHost(&records_[i].cpuBackup, records_[i].size));
+                CUDACHECKEXIT(cudaMallocHost(&records_[i].cpuBackup, records_[i].size));
             }
-            CUCHECK(cudaMemcpyAsync(records_[i].cpuBackup, ptr, records_[i].size, cudaMemcpyDeviceToHost));
+            CUDACHECKEXIT(cudaMemcpyAsync(records_[i].cpuBackup, ptr, records_[i].size, cudaMemcpyDeviceToHost));
         }
     }
 
@@ -48,7 +56,7 @@ void NcclTms::copyToHostAndReleaseA() {
     WARN("NcclTms::copyToHostAndReleaseA stage release");
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
-            CUCHECK(cuMemUnmap(records_[i].ptr, records_[i].size));
+            CUCHECKEXIT(cuMemUnmap(records_[i].ptr, records_[i].size));
         }
     }
 }
@@ -60,10 +68,10 @@ void NcclTms::copyToHostAndReleaseB() {
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
             CUmemGenericAllocationHandle handle;
-            CUCHECK(cuMemRetainAllocationHandle(&handle, records_[i].ptr));
+            CUCHECKEXIT(cuMemRetainAllocationHandle(&handle, records_[i].ptr));
 
-            CUCHECK(cuMemUnmap(records_[i].ptr, records_[i].size));
-            CUCHECK(cuMemRelease(handle));
+            CUCHECKEXIT(cuMemUnmap(records_[i].ptr, records_[i].size));
+            CUCHECKEXIT(cuMemRelease(handle));
         }
     }
 }
@@ -117,27 +125,27 @@ char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
                 int cudaDev;
                 int flag = 0;
                 CUDACHECK(cudaGetDevice(&cudaDev));
-                CUCHECK(cuDeviceGet(&currentDev, cudaDev));
+                CUCHECKEXIT(cuDeviceGet(&currentDev, cudaDev));
                 prop.type = CU_MEM_ALLOCATION_TYPE_PINNED;
                 prop.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
                 prop.requestedHandleTypes = type;
                 prop.location.id = currentDev;
                 // Query device to see if RDMA support is available
-                CUCHECK(cuDeviceGetAttribute(&flag, CU_DEVICE_ATTRIBUTE_GPU_DIRECT_RDMA_SUPPORTED, currentDev));
+                CUCHECKEXIT(cuDeviceGetAttribute(&flag, CU_DEVICE_ATTRIBUTE_GPU_DIRECT_RDMA_SUPPORTED, currentDev));
                 if (flag) prop.allocFlags.gpuDirectRDMACapable = 1;
-                CUCHECK(cuMemGetAllocationGranularity(&granularity, &prop, CU_MEM_ALLOC_GRANULARITY_MINIMUM));
+                CUCHECKEXIT(cuMemGetAllocationGranularity(&granularity, &prop, CU_MEM_ALLOC_GRANULARITY_MINIMUM));
                 ALIGN_SIZE(size, granularity);
                 /* Allocate the physical memory on the device */
-                CUCHECK(cuMemCreate(&handle, size, &prop, 0));
+                CUCHECKEXIT(cuMemCreate(&handle, size, &prop, 0));
                 // /* Reserve a virtual address range */
-                // CUCHECK(cuMemAddressReserve((CUdeviceptr *)ptr, size, granularity, 0, 0));
+                // CUCHECKEXIT(cuMemAddressReserve((CUdeviceptr *)ptr, size, granularity, 0, 0));
                 /* Map the virtual address range to the physical allocation */
-                CUCHECK(cuMemMap((CUdeviceptr)records_[i].ptr, records_[i].size, 0, handle, 0));
+                CUCHECKEXIT(cuMemMap((CUdeviceptr)records_[i].ptr, records_[i].size, 0, handle, 0));
                 // /* Now allow RW access to the newly mapped memory */
                 // accessDesc.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
                 // accessDesc.location.id = currentDev;
                 // accessDesc.flags = CU_MEM_ACCESS_FLAGS_PROT_READWRITE;
-                // CUCHECK(cuMemSetAccess((CUdeviceptr)*ptr, size, &accessDesc, 1));
+                // CUCHECKEXIT(cuMemSetAccess((CUdeviceptr)*ptr, size, &accessDesc, 1));
             }
 
             // ref: proxyGetFd
@@ -146,7 +154,7 @@ char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
             for (int fd_repeat_index = 0; fd_repeat_index < fd_repeat_num; ++fd_repeat_index) {
                 int fd = -1;
                 CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
-                CUCHECK(cuMemExportToShareableHandle(&fd, handle, type, 0));
+                CUCHECKEXIT(cuMemExportToShareableHandle(&fd, handle, type, 0));
                 fd_arr.push_back(fd);
             }
             output_json.push_back({{"fd_arr", fd_arr}});
@@ -175,10 +183,10 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
 
             CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
             CUmemGenericAllocationHandle handle;
-            CUCHECK(cuMemImportFromShareableHandle(&handle, (void *)(uintptr_t)fd, type));
+            CUCHECKEXIT(cuMemImportFromShareableHandle(&handle, (void *)(uintptr_t)fd, type));
             (void) close(fd);
 
-            CUCHECK(cuMemMap(records_[i].ptr, records_[i].size, /* offset */ 0, handle, /* flags */ 0));
+            CUCHECKEXIT(cuMemMap(records_[i].ptr, records_[i].size, /* offset */ 0, handle, /* flags */ 0));
         }
     }
 
@@ -186,7 +194,7 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
     WARN("NcclTms::resumeAndCopyToDeviceB stage copy");
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
-            CUCHECK(cudaMemcpyAsync(records_[i].ptr, records_[i].cpuBackup, records_[i].size, cudaMemcpyHostToDevice));
+            CUDACHECKEXIT(cudaMemcpyAsync(records_[i].ptr, records_[i].cpuBackup, records_[i].size, cudaMemcpyHostToDevice));
             // TODO free host memory later
         }
     }
