@@ -8,8 +8,9 @@ include ../makefiles/version.mk
 
 ##### src files
 INCEXPORTS  := nccl.h nccl_net.h
+# NOTE MODIFIED add nccl_tms.cc
 LIBSRCFILES := \
-	bootstrap.cc channel.cc collectives.cc debug.cc enqueue.cc group.cc \
+	nccl_tms.cc bootstrap.cc channel.cc collectives.cc debug.cc enqueue.cc group.cc \
 	init.cc init_nvtx.cc net.cc proxy.cc transport.cc register.cc \
 	$(wildcard graph/*.cc) \
 	$(wildcard misc/*.cc) \
