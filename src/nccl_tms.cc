@@ -108,6 +108,8 @@ void NcclTms::copyToHostAndReleaseA() {
     // copy to host
     WARN("NcclTms::copyToHostAndReleaseA stage copy");
     for (size_t i = 0; i < records_.size(); ++i) {
+        if (records_[i].deallocated) continue;
+
         if (
             (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) ||
             (records_[i].ipcMode == NcclTmsIpcMode::LOCAL)
@@ -123,6 +125,8 @@ void NcclTms::copyToHostAndReleaseA() {
     WARN("NcclTms::copyToHostAndReleaseA stage release");
     int importerSizeSum = 0;
     for (size_t i = 0; i < records_.size(); ++i) {
+        if (records_[i].deallocated) continue;
+
         if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
             CUmemAllocationProp prop = getCUmemAllocationProp();
             size_t alignedSize = alignSizeByGranularity(records_[i].size, prop);
@@ -144,6 +148,8 @@ void NcclTms::copyToHostAndReleaseB() {
     WARN("NcclTms::copyToHostAndReleaseA stage release");
     int exporterSizeSum = 0;
     for (size_t i = 0; i < records_.size(); ++i) {
+        if (records_[i].deallocated) continue;
+
         if (
             (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) ||
             (records_[i].ipcMode == NcclTmsIpcMode::LOCAL)
@@ -174,6 +180,11 @@ char* NcclTms::getRecords() {
     nlohmann::json output_json = nlohmann::json::array();
 
     for (size_t i = 0; i < records_.size(); ++i) {
+        if (records_[i].deallocated) {
+            WARN("TODO not implemented");
+            exit(1);
+        }
+
         output_json.push_back({
             {"i", i},
             {"initialRawCuDesc", records_[i].initialRawCuDesc},
