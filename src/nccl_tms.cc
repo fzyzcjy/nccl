@@ -96,6 +96,8 @@ void NcclTms::resumeAndCopyToDeviceA() {
                 CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
                 CUCHECK(cuMemExportToShareableHandle(&fd, handle, type, 0));
             }
+            
+            TODO_store_fd;
         }
     }
 }
