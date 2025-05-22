@@ -21,6 +21,10 @@ public:
     NcclTms();
     static NcclTms &instance();
     void registerAlloc(void* ptr, size_t size, uint64_t rawIpcDesc, NcclTmsIpcMode ipcMode);
+    void copyToHostAndReleaseA();
+    void copyToHostAndReleaseB();
+    void resumeAndCopyToDeviceA();
+    void resumeAndCopyToDeviceB();
 
 private:
     // TODO improve
