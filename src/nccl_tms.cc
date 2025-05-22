@@ -48,7 +48,7 @@ void NcclTms::copyToHostAndReleaseA() {
             if (records_[i].cpuBackup == nullptr) {
                 CUDACHECKEXIT(cudaMallocHost(&records_[i].cpuBackup, records_[i].size));
             }
-            CUDACHECKEXIT(cudaMemcpyAsync(records_[i].cpuBackup, ptr, records_[i].size, cudaMemcpyDeviceToHost));
+            CUDACHECKEXIT(cudaMemcpyAsync(records_[i].cpuBackup, records_[i].ptr, records_[i].size, cudaMemcpyDeviceToHost));
         }
     }
 
@@ -91,9 +91,9 @@ char* NcclTms::getRecords() {
 
     for (size_t i = 0; i < records_.size(); ++i) {
         output_json.push_back({
-            {"i": i},
-            {"initialRawCuDesc": records_[i].initialRawCuDesc},
-            {"ipcMode": ipcModeToString(records_[i].ipcMode)},
+            {"i", i},
+            {"initialRawCuDesc", records_[i].initialRawCuDesc},
+            {"ipcMode", ipcModeToString(records_[i].ipcMode)},
         });
     }
 
@@ -124,7 +124,7 @@ char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
                 CUmemAllocationHandleType type = ncclCuMemHandleType;
                 int cudaDev;
                 int flag = 0;
-                CUDACHECK(cudaGetDevice(&cudaDev));
+                CUDACHECKEXIT(cudaGetDevice(&cudaDev));
                 CUCHECKEXIT(cuDeviceGet(&currentDev, cudaDev));
                 prop.type = CU_MEM_ALLOCATION_TYPE_PINNED;
                 prop.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
@@ -203,8 +203,8 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
 extern "C" {
 
 void nccl_tms_copyToHostAndReleaseA() { NcclTms::instance().copyToHostAndReleaseA(); }
-void nccl_tms_copyToHostBndReleaseB() { NcclTms::instance().copyToHostBndReleaseB(); }
-char* nccl_tms_getRecords() { NcclTms::instance().getRecords(); }
+void nccl_tms_copyToHostAndReleaseB() { NcclTms::instance().copyToHostAndReleaseB(); }
+char* nccl_tms_getRecords() { return NcclTms::instance().getRecords(); }
 char* nccl_tms_resumeAndCopyToDeviceA(const char* input_str) { return NcclTms::instance().resumeAndCopyToDeviceA(input_str); }
 void nccl_tms_resumeBndCopyToDeviceB(const char* input_str) { NcclTms::instance().resumeAndCopyToDeviceB(input_str); }
 
