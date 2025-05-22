@@ -103,6 +103,26 @@ char* NcclTms::getRecords() {
     return result;
 }
 
+// ref: ncclCuMemAlloc
+CUmemAllocationProp getCUmemAllocationProp() {
+    CUdevice currentDev;
+    CUmemAllocationProp prop = {};
+    // CUmemAccessDesc accessDesc = {};
+    CUmemAllocationHandleType type = ncclCuMemHandleType;
+    int cudaDev;
+    int flag = 0;
+    CUDACHECKEXIT(cudaGetDevice(&cudaDev));
+    CUCHECKEXIT(cuDeviceGet(&currentDev, cudaDev));
+    prop.type = CU_MEM_ALLOCATION_TYPE_PINNED;
+    prop.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
+    prop.requestedHandleTypes = type;
+    prop.location.id = currentDev;
+    // Query device to see if RDMA support is available
+    CUCHECKEXIT(cuDeviceGetAttribute(&flag, CU_DEVICE_ATTRIBUTE_GPU_DIRECT_RDMA_SUPPORTED, currentDev));
+    if (flag) prop.allocFlags.gpuDirectRDMACapable = 1;
+    return prop;
+}
+
 char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
@@ -119,34 +139,11 @@ char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
             {
                 size_t size = records_[i].size;
                 size_t granularity = 0;
-                CUdevice currentDev;
-                CUmemAllocationProp prop = {};
-                // CUmemAccessDesc accessDesc = {};
-                CUmemAllocationHandleType type = ncclCuMemHandleType;
-                int cudaDev;
-                int flag = 0;
-                CUDACHECKEXIT(cudaGetDevice(&cudaDev));
-                CUCHECKEXIT(cuDeviceGet(&currentDev, cudaDev));
-                prop.type = CU_MEM_ALLOCATION_TYPE_PINNED;
-                prop.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
-                prop.requestedHandleTypes = type;
-                prop.location.id = currentDev;
-                // Query device to see if RDMA support is available
-                CUCHECKEXIT(cuDeviceGetAttribute(&flag, CU_DEVICE_ATTRIBUTE_GPU_DIRECT_RDMA_SUPPORTED, currentDev));
-                if (flag) prop.allocFlags.gpuDirectRDMACapable = 1;
                 CUCHECKEXIT(cuMemGetAllocationGranularity(&granularity, &prop, CU_MEM_ALLOC_GRANULARITY_MINIMUM));
                 ALIGN_SIZE(size, granularity);
                 /* Allocate the physical memory on the device */
                 CUCHECKEXIT(cuMemCreate(&handle, size, &prop, 0));
-                // /* Reserve a virtual address range */
-                // CUCHECKEXIT(cuMemAddressReserve((CUdeviceptr *)ptr, size, granularity, 0, 0));
-                /* Map the virtual address range to the physical allocation */
                 CUCHECKEXIT(cuMemMap((CUdeviceptr)records_[i].ptr, records_[i].size, 0, handle, 0));
-                // /* Now allow RW access to the newly mapped memory */
-                // accessDesc.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
-                // accessDesc.location.id = currentDev;
-                // accessDesc.flags = CU_MEM_ACCESS_FLAGS_PROT_READWRITE;
-                // CUCHECKEXIT(cuMemSetAccess((CUdeviceptr)*ptr, size, &accessDesc, 1));
             }
 
             // ref: proxyGetFd
