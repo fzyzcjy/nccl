@@ -125,12 +125,16 @@ char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
 
             // ref: proxyGetFd
             int fd_repeat_num = input_json[i]["fd_repeat_num"];
+            std::vector<int> fd_arr;
             for (int fd_repeat_index = 0; fd_repeat_index < fd_repeat_num; ++fd_repeat_index) {
                 int fd = -1;
                 CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
                 CUCHECK(cuMemExportToShareableHandle(&fd, handle, type, 0));
-                output_json.push_back({{"i", i}, {"fd_repeat_index", fd_repeat_index}, {"fd", fd}});
+                fd_arr.push_back(fd);
             }
+            output_json.push_back({{"fd_arr", fd_arr}});
+        } else {
+            output_json.push_back({});
         }
     }
 
