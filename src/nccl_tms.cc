@@ -203,12 +203,11 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
 
 extern "C" {
 
-void nccl_tms_copyToHostAndReleaseA() { NcclTms::instance().copyToHostAndReleaseA(); }
-void nccl_tms_copyToHostAndReleaseB() { NcclTms::instance().copyToHostAndReleaseB(); }
-char* nccl_tms_getRecords() { return NcclTms::instance().getRecords(); }
-char* nccl_tms_resumeAndCopyToDeviceA(const char* input_str) { return NcclTms::instance().resumeAndCopyToDeviceA(input_str); }
-void nccl_tms_resumeBndCopyToDeviceB(const char* input_str) { NcclTms::instance().resumeAndCopyToDeviceB(input_str); }
-
-void nccl_tms_freeDynamicString(char* ptr) { delete[] ptr; }
+__attribute__((visibility("default"))) void nccl_tms_copyToHostAndReleaseA() { NcclTms::instance().copyToHostAndReleaseA(); }
+__attribute__((visibility("default"))) void nccl_tms_copyToHostAndReleaseB() { NcclTms::instance().copyToHostAndReleaseB(); }
+__attribute__((visibility("default"))) char* nccl_tms_getRecords() { return NcclTms::instance().getRecords(); }
+__attribute__((visibility("default"))) char* nccl_tms_resumeAndCopyToDeviceA(const char* input_str) { return NcclTms::instance().resumeAndCopyToDeviceA(input_str); }
+__attribute__((visibility("default"))) void nccl_tms_resumeBndCopyToDeviceB(const char* input_str) { NcclTms::instance().resumeAndCopyToDeviceB(input_str); }
+__attribute__((visibility("default"))) void nccl_tms_freeDynamicString(char* ptr) { delete[] ptr; }
 
 }
