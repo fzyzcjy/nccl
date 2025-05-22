@@ -218,7 +218,7 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
             WARN("NcclTms::resumeAndCopyToDeviceB cudaMemcpy i=%d ptr=%p cpuBackup=%p size=%d",
-                records_[i].ptr, records_[i].cpuBackup, (int) records_[i].size);
+                (int) i, records_[i].ptr, records_[i].cpuBackup, (int) records_[i].size);
             // TODO maybe use cudaMemcpyAsync
             CUDACHECKEXIT(cudaMemcpy(records_[i].ptr, records_[i].cpuBackup, records_[i].size, cudaMemcpyHostToDevice));
             // TODO free host memory later
