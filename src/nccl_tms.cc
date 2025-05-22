@@ -52,9 +52,10 @@ void NcclTms::copyToHostAndReleaseB() {
     }
 }
 
-char* NcclTms::resumeAndCopyToDeviceA() {
+char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
+    nlohmann::json input_json = nlohmann::json::parse(input_str);
     nlohmann::json output_json = nlohmann::json::array();
 
     for (size_t i = 0; i < records_.size(); ++i) {
@@ -96,7 +97,8 @@ char* NcclTms::resumeAndCopyToDeviceA() {
             }
 
             // ref: proxyGetFd
-            for (int fd_repeat_index = 0; fd_repeat_index < TODO; ++fd_repeat_index) {
+            int fd_repeat_num = input_json[i]["fd_repeat_num"];
+            for (int fd_repeat_index = 0; fd_repeat_index < fd_repeat_num; ++fd_repeat_index) {
                 int fd = -1;
                 CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
                 CUCHECK(cuMemExportToShareableHandle(&fd, handle, type, 0));
