@@ -112,6 +112,9 @@ void NcclTms::copyToHostAndReleaseA() {
             size_t size = alignSizeByGranularity(records_[i].size, prop);
 
             CUCHECKEXIT(cuMemUnmap((CUdeviceptr)records_[i].ptr, size));
+
+            WARN("NcclTms::copyToHostAndReleaseA hack also release IMPORTER physical memory");
+            CUCHECKEXIT(cuMemRelease(records_[i].initialHandle));
         }
     }
 }
