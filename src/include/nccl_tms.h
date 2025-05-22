@@ -13,6 +13,7 @@ struct NcclTmsRecord {
     void* ptr;
     size_t size;
     uint64_t initialRawCuDesc;
+    CUmemGenericAllocationHandle initialHandle;
     NcclTmsIpcMode ipcMode;
     void* cpuBackup;
 };
@@ -21,7 +22,7 @@ class NcclTms {
 public:
     NcclTms();
     static NcclTms &instance();
-    void registerAlloc(void* ptr, size_t size, uint64_t rawCuDesc, NcclTmsIpcMode ipcMode);
+    void registerAlloc(void* ptr, size_t size, uint64_t rawCuDesc, CUmemGenericAllocationHandle handle, NcclTmsIpcMode ipcMode);
     void copyToHostAndReleaseA();
     void copyToHostAndReleaseB();
     char* getRecords();

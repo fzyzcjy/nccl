@@ -81,12 +81,12 @@ void NcclTms::setThreadLocalEnable(bool enable) {
     nccl_tms_enable_ = enable;
 }
 
-void NcclTms::registerAlloc(void* ptr, size_t size, uint64_t rawCuDesc, NcclTmsIpcMode ipcMode) {
+void NcclTms::registerAlloc(void* ptr, size_t size, uint64_t rawCuDesc, CUmemGenericAllocationHandle handle, NcclTmsIpcMode ipcMode) {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
     WARN("NcclTms::registerAlloc enable=%d ptr=%p, size=%zu, rawCuDesc=%lu, ipcMode=%d", (int) nccl_tms_enable_, ptr, size, rawCuDesc, static_cast<int>(ipcMode));
     if (nccl_tms_enable_) {
-        records_.push_back(NcclTmsRecord{ptr, size, rawCuDesc, ipcMode});
+        records_.push_back(NcclTmsRecord{ptr, size, rawCuDesc, handle, ipcMode});
     }
 }
 
@@ -125,11 +125,8 @@ void NcclTms::copyToHostAndReleaseB() {
             CUmemAllocationProp prop = getCUmemAllocationProp();
             size_t alignedSize = alignSizeByGranularity(records_[i].size, prop);
 
-            CUmemGenericAllocationHandle handle;
-            CUCHECKEXIT(cuMemRetainAllocationHandle(&handle, records_[i].ptr));
-
             CUCHECKEXIT(cuMemUnmap((CUdeviceptr)records_[i].ptr, alignedSize));
-            CUCHECKEXIT(cuMemRelease(handle));
+            CUCHECKEXIT(cuMemRelease(records_[i].initialHandle));
         }
     }
 }
