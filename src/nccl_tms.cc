@@ -1,23 +1,13 @@
 #include "tms.h"
 
-struct NcclTmsRecord {
+NcclTmsImpl::NcclTmsImpl() {}
 
-};
+// 静态单例方法实现
+NcclTmsImpl& NcclTmsImpl::instance() {
+    static NcclTmsImpl instance;
+    return instance;
+}
 
-class NcclTmsImpl {
-public:
-    NcclTmsImpl() {}
-
-    static NcclTmsImpl &instance() {
-        static NcclTmsImpl instance;
-        return instance;
-    }
-
-private:
-    std::mutex allocator_metadata_mutex_;
-    std::vector<NcclTmsRecord> records_;
-};
-
-void ncclTmsRegister(void* ptr, size_t size, uint64_t rawIpcDesc, NcclTmsIpcMode ipcMode) {
+void NcclTmsImpl::registerAlloc(void* ptr, size_t size, uint64_t rawIpcDesc, NcclTmsIpcMode ipcMode) {
     TODO;
 }
