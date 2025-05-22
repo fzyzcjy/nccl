@@ -506,9 +506,9 @@ static ncclResult_t sharedNetBuffersInit(struct ncclProxyState* proxyState, int 
 
   if (cuda && state->cudaBuff == NULL) {
     if (sameProcess == 0 || ncclCuMemEnable()) {
-      NcclTms::instance().setThreadLocalEnable(false);
+      NcclTms::instance().changeDisableCounter(1);
       NCCLCHECK(ncclP2pAllocateShareableBuffer(state->size, &state->ipcDesc, (void**)&state->cudaBuff));
-      NcclTms::instance().setThreadLocalEnable(true);
+      NcclTms::instance().changeDisableCounter(-1);
     } else {
       NCCLCHECK(ncclCudaCalloc(&state->cudaBuff, state->size));
     }
@@ -736,10 +736,10 @@ static ncclResult_t sendProxyConnect(struct ncclProxyConnection* connection, str
     if (resources->shared == 0) {
       if (!map->sameProcess || ncclCuMemEnable()) {
         ALIGN_SIZE(map->mems[NCCL_NET_MAP_DEVMEM].size, CUDA_IPC_MIN);
-        NcclTms::instance().setThreadLocalEnable(false);
+        NcclTms::instance().changeDisableCounter(1);
         NCCLCHECK(ncclP2pAllocateShareableBuffer(map->mems[NCCL_NET_MAP_DEVMEM].size, &map->mems[NCCL_NET_MAP_DEVMEM].ipcDesc,
                                                  (void**)&map->mems[NCCL_NET_MAP_DEVMEM].gpuPtr));
-        NcclTms::instance().setThreadLocalEnable(true);
+        NcclTms::instance().changeDisableCounter(-1);
       } else {
         NCCLCHECK(ncclCudaCalloc(&map->mems[NCCL_NET_MAP_DEVMEM].gpuPtr, map->mems[NCCL_NET_MAP_DEVMEM].size));
       }
@@ -888,10 +888,10 @@ static ncclResult_t recvProxyConnect(struct ncclProxyConnection* connection, str
   if (map->mems[NCCL_NET_MAP_DEVMEM].size) {
     if (resources->shared == 0) {
       if (ncclCuMemEnable()) {
-        NcclTms::instance().setThreadLocalEnable(false);
+        NcclTms::instance().changeDisableCounter(1);
         NCCLCHECK(ncclP2pAllocateShareableBuffer(map->mems[NCCL_NET_MAP_DEVMEM].size, &map->mems[NCCL_NET_MAP_DEVMEM].ipcDesc,
                                                  (void**)&map->mems[NCCL_NET_MAP_DEVMEM].gpuPtr));
-        NcclTms::instance().setThreadLocalEnable(true);
+        NcclTms::instance().changeDisableCounter(-1);
       } else {
         NCCLCHECK(ncclCudaCalloc(&map->mems[NCCL_NET_MAP_DEVMEM].gpuPtr, map->mems[NCCL_NET_MAP_DEVMEM].size));
       }

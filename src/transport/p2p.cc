@@ -205,9 +205,9 @@ ncclResult_t ncclP2pAllocateShareableBuffer(size_t size, ncclIpcDesc *ipcDesc, v
     // cuMem API support
     CUmemGenericAllocationHandle handle;
 
-    NcclTms::instance().setThreadLocalEnable(false);
+    NcclTms::instance().changeDisableCounter(1);
     NCCLCHECK(ncclCuMemAlloc(ptr, &handle, size));
-    NcclTms::instance().setThreadLocalEnable(true);
+    NcclTms::instance().changeDisableCounter(-1);
 
     if (type == CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR) {
       // Return the native cuMem handle for later Export/Import via UDS
