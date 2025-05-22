@@ -117,20 +117,7 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
             // ref: ncclP2pImportShareableBuffer
-
-            int fd = -999;
-            {
-                for (const auto& input_item : input_json) {
-                    if (item.contains("initialRawCuDesc") && item["initialRawCuDesc"] == records_[i].initialRawCuDesc) {
-                        fd = item["fd"];
-                        break;
-                    }
-                }
-            }
-            if (fd == -999) {
-                WARN("resumeAndCopyToDeviceB cannot find fd");
-                exit(1);
-            }
+            int fd = input_json[i]["fd"];
 
             CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
             CUmemGenericAllocationHandle handle;
