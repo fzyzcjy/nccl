@@ -12,7 +12,7 @@ enum NcclTmsIpcMode {
 struct NcclTmsRecord {
     void* ptr;
     size_t size;
-    uint64_t rawCuDesc;
+    uint64_t initialRawCuDesc;
     NcclTmsIpcMode ipcMode;
 };
 
