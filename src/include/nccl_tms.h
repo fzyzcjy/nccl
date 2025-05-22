@@ -5,8 +5,8 @@
 #include <vector>
 
 enum NcclTmsIpcMode {
-    EXPORT,
-    IMPORT,
+    EXPORTER,
+    IMPORTER,
 };
 
 struct NcclTmsRecord {

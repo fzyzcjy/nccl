@@ -16,7 +16,15 @@ void NcclTms::registerAlloc(void* ptr, size_t size, uint64_t rawIpcDesc, NcclTms
 void NcclTms::copyToHostAndReleaseA() {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
-    TODO;
+    // copy to host
+    TODO
+
+    // release
+    for (size_t i = 0; i < records_.size(); ++i) {
+        if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
+            TODO;
+        }
+    }
 }
 
 void NcclTms::copyToHostAndReleaseB() {
