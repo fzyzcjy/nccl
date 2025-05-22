@@ -58,11 +58,7 @@ void NcclTms::resumeAndCopyToDeviceB() {
 
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
-            // ref: ncclP2pImportShareableBuffer
-            int fd = -1;
-            NCCLCHECK(ncclProxyClientGetFdBlocking(comm, tpPeer, &cuDesc->data, &fd));
-            CUCHECK(cuMemImportFromShareableHandle(&handle, (void *)(uintptr_t)fd, type));
-            (void) close(fd);
+            TODO;
         }
     }
 
