@@ -56,7 +56,12 @@ void NcclTms::resumeAndCopyToDeviceA() {
 void NcclTms::resumeAndCopyToDeviceB() {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
-    TODO;
+    for (size_t i = 0; i < records_.size(); ++i) {
+        if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
+            // ref: ncclP2pAllocateShareableBuffer
+            TODO;
+        }
+    }
 
     // copy to device
     TODO;
