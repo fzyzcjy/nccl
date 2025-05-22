@@ -22,7 +22,7 @@ void NcclTms::copyToHostAndReleaseA() {
     // release
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
-            CUCHECK(cuMemUnmap((CUdeviceptr)records_[i].ptr, records_[i].size));
+            CUCHECK(cuMemUnmap(records_[i].ptr, records_[i].size));
         }
     }
 }
