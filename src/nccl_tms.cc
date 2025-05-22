@@ -13,3 +13,27 @@ void NcclTms::registerAlloc(void* ptr, size_t size, uint64_t rawIpcDesc, NcclTms
 
     TODO;
 }
+
+void NcclTms::copyToHostAndReleaseA() {
+    const std::lock_guard<std::mutex> lock(primary_mutex_);
+
+    TODO;
+}
+
+void NcclTms::copyToHostAndReleaseB() {
+    const std::lock_guard<std::mutex> lock(primary_mutex_);
+
+    TODO;
+}
+
+void NcclTms::resumeAndCopyToDeviceA() {
+    const std::lock_guard<std::mutex> lock(primary_mutex_);
+
+    TODO;
+}
+
+void NcclTms::resumeAndCopyToDeviceB() {
+    const std::lock_guard<std::mutex> lock(primary_mutex_);
+
+    TODO;
+}
