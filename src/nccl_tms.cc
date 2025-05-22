@@ -153,7 +153,7 @@ void NcclTms::copyToHostAndReleaseB() {
             size_t alignedSize = alignSizeByGranularity(records_[i].size, prop);
 
             WARN("NcclTms::copyToHostAndReleaseB cuMemUnmap i=%d ptr=%p size=%d alignedSize=%d",
-                (int) i, records_[i].ptr, records_[i].size, alignedSize);
+                (int) i, records_[i].ptr, (int) records_[i].size, (int) alignedSize);
             CUCHECKEXIT(cuMemUnmap((CUdeviceptr)records_[i].ptr, alignedSize));
 
             WARN("NcclTms::copyToHostAndReleaseB cuMemRelease initialHandle=%ld",
