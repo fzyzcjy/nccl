@@ -30,7 +30,12 @@ void NcclTms::copyToHostAndReleaseA() {
 void NcclTms::copyToHostAndReleaseB() {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
-    TODO;
+    for (size_t i = 0; i < records_.size(); ++i) {
+        if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
+            CUCHECK(cuMemUnmap(records_[i].ptr, records_[i].size));
+            CUCHECK(cuMemRelease(TODO));
+        }
+    }
 }
 
 void NcclTms::resumeAndCopyToDeviceA() {
