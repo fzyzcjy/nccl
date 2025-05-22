@@ -157,6 +157,7 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
         if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
             // ref: ncclP2pImportShareableBuffer
             int fd = input_json[i]["fd"];
+            WARN("NcclTms::resumeAndCopyToDeviceB cuMemMap i=%d fd=%d", (int) i, fd);
 
             CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
             CUmemGenericAllocationHandle handle;

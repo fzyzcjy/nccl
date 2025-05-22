@@ -24,8 +24,10 @@ public:
     void registerAlloc(void* ptr, size_t size, uint64_t rawCuDesc, NcclTmsIpcMode ipcMode);
     void copyToHostAndReleaseA();
     void copyToHostAndReleaseB();
-    void resumeAndCopyToDeviceA();
-    void resumeAndCopyToDeviceB();
+    char* NcclTms::getRecords();
+    char* NcclTms::resumeAndCopyToDeviceA(const char* input_str);
+    void NcclTms::resumeAndCopyToDeviceB(const char* input_str);
+}
 
 private:
     // TODO improve
