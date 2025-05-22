@@ -1,4 +1,6 @@
-#include "tms.h"
+#include "comm.h"
+#include "utils.h"
+#include "nccl_tms.h"
 #include "json.hpp"
 
 NcclTms::NcclTms() {}
