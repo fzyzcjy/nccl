@@ -3,6 +3,18 @@
 #include "nccl_tms.h"
 #include "json.hpp"
 
+// NOTE MODIFIED from CUCHECK
+#define CUCHECKEXIT(cmd) do {				      \
+    CUresult err = pfn_##cmd;				      \
+    if( err != CUDA_SUCCESS ) {				      \
+      const char *errStr;				      \
+      (void) pfn_cuGetErrorString(err, &errStr);	      \
+      WARN("Cuda failure %d '%s'", err, errStr);	      \
+      exit(1);			      \
+    }							      \
+} while(false)
+
+
 NcclTms::NcclTms() {}
 
 // 静态单例方法实现
