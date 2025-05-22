@@ -23,6 +23,33 @@
     }                                                       \
 } while(false)
 
+// ref: ncclCuMemAlloc
+CUmemAllocationProp getCUmemAllocationProp() {
+    CUdevice currentDev;
+    CUmemAllocationProp prop = {};
+    // CUmemAccessDesc accessDesc = {};
+    CUmemAllocationHandleType type = ncclCuMemHandleType;
+    int cudaDev;
+    int flag = 0;
+    CUDACHECKEXIT(cudaGetDevice(&cudaDev));
+    CUCHECKEXIT(cuDeviceGet(&currentDev, cudaDev));
+    prop.type = CU_MEM_ALLOCATION_TYPE_PINNED;
+    prop.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
+    prop.requestedHandleTypes = type;
+    prop.location.id = currentDev;
+    // Query device to see if RDMA support is available
+    CUCHECKEXIT(cuDeviceGetAttribute(&flag, CU_DEVICE_ATTRIBUTE_GPU_DIRECT_RDMA_SUPPORTED, currentDev));
+    if (flag) prop.allocFlags.gpuDirectRDMACapable = 1;
+    return prop;
+}
+
+size_t alignSizeByGranularity(size_t size, CUmemAllocationProp prop) {
+    size_t granularity = 0;
+    CUCHECKEXIT(cuMemGetAllocationGranularity(&granularity, &prop, CU_MEM_ALLOC_GRANULARITY_MINIMUM));
+    ALIGN_SIZE(size, granularity);
+    return size;
+}
+
 NcclTms::NcclTms() {}
 
 // 静态单例方法实现
@@ -56,7 +83,10 @@ void NcclTms::copyToHostAndReleaseA() {
     WARN("NcclTms::copyToHostAndReleaseA stage release");
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
-            CUCHECKEXIT(cuMemUnmap((CUdeviceptr)records_[i].ptr, records_[i].size));
+            CUmemAllocationProp prop = getCUmemAllocationProp();
+            size_t size = alignSizeByGranularity(records_[i].size, prop);
+
+            CUCHECKEXIT(cuMemUnmap((CUdeviceptr)records_[i].ptr, size));
         }
     }
 }
@@ -67,10 +97,13 @@ void NcclTms::copyToHostAndReleaseB() {
     WARN("NcclTms::copyToHostAndReleaseA stage release");
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
+            CUmemAllocationProp prop = getCUmemAllocationProp();
+            size_t size = alignSizeByGranularity(records_[i].size, prop);
+
             CUmemGenericAllocationHandle handle;
             CUCHECKEXIT(cuMemRetainAllocationHandle(&handle, records_[i].ptr));
 
-            CUCHECKEXIT(cuMemUnmap((CUdeviceptr)records_[i].ptr, records_[i].size));
+            CUCHECKEXIT(cuMemUnmap((CUdeviceptr)records_[i].ptr, size));
             CUCHECKEXIT(cuMemRelease(handle));
         }
     }
@@ -101,33 +134,6 @@ char* NcclTms::getRecords() {
     char* result = new char[message.size() + 1];
     std::strcpy(result, message.c_str());
     return result;
-}
-
-// ref: ncclCuMemAlloc
-CUmemAllocationProp getCUmemAllocationProp() {
-    CUdevice currentDev;
-    CUmemAllocationProp prop = {};
-    // CUmemAccessDesc accessDesc = {};
-    CUmemAllocationHandleType type = ncclCuMemHandleType;
-    int cudaDev;
-    int flag = 0;
-    CUDACHECKEXIT(cudaGetDevice(&cudaDev));
-    CUCHECKEXIT(cuDeviceGet(&currentDev, cudaDev));
-    prop.type = CU_MEM_ALLOCATION_TYPE_PINNED;
-    prop.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
-    prop.requestedHandleTypes = type;
-    prop.location.id = currentDev;
-    // Query device to see if RDMA support is available
-    CUCHECKEXIT(cuDeviceGetAttribute(&flag, CU_DEVICE_ATTRIBUTE_GPU_DIRECT_RDMA_SUPPORTED, currentDev));
-    if (flag) prop.allocFlags.gpuDirectRDMACapable = 1;
-    return prop;
-}
-
-size_t alignSizeByGranularity(size_t size, CUmemAllocationProp prop) {
-    size_t granularity = 0;
-    CUCHECKEXIT(cuMemGetAllocationGranularity(&granularity, &prop, CU_MEM_ALLOC_GRANULARITY_MINIMUM));
-    ALIGN_SIZE(size, granularity);
-    return size;
 }
 
 char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
