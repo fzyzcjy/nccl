@@ -57,12 +57,12 @@ void NcclTms::resumeAndCopyToDeviceA() {
             // ref: ncclP2pAllocateShareableBuffer,
 
             // ref: ncclCuMemAlloc
+            CUmemGenericAllocationHandle handle;
             {
                 size_t granularity = 0;
                 CUdevice currentDev;
                 CUmemAllocationProp prop = {};
                 CUmemAccessDesc accessDesc = {};
-                CUmemGenericAllocationHandle handle;
                 CUmemAllocationHandleType type = ncclCuMemHandleType;
                 int cudaDev;
                 int flag = 0;
