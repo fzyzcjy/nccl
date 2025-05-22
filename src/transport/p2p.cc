@@ -212,7 +212,7 @@ ncclResult_t ncclP2pAllocateShareableBuffer(size_t size, ncclIpcDesc *ipcDesc, v
       CUCHECK(cuMemExportToShareableHandle(&ipcDesc->cuDesc, handle, type, 0));
     }
 
-    ncclTmsRegister(*ptr, size, ipcDesc->cuDesc.data, NcclTmsIpcMode::EXPORT);
+    NcclTmsImpl::get_instance().registerAlloc(*ptr, size, ipcDesc->cuDesc.data, NcclTmsIpcMode::EXPORT);
 #else
     return ncclInternalError;
 #endif
@@ -271,7 +271,7 @@ ncclResult_t ncclP2pImportShareableBuffer(struct ncclComm *comm, int tpPeer, siz
 
     *devMemPtr = (void *)dptr;
 
-    ncclTmsRegister(*ptr, size, cuDesc.data, NcclTmsIpcMode::IMPORT);
+    NcclTmsImpl::get_instance().registerAlloc(*ptr, size, cuDesc.data, NcclTmsIpcMode::IMPORT);
 #else
     return ncclInternalError;
 #endif
