@@ -92,6 +92,9 @@ DECLARE_CUDA_PFN(cuMulticastCreate);
 DECLARE_CUDA_PFN(cuMulticastGetGranularity);
 DECLARE_CUDA_PFN(cuMulticastUnbind);
 #endif
+// nccl_tms
+DECLARE_CUDA_PFN(cudaMallocHost);
+DECLARE_CUDA_PFN(cudaMemcpyAsync);
 #endif
 
 #define CUDA_DRIVER_MIN_VERSION 11030
