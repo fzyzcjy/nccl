@@ -128,6 +128,10 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
                     }
                 }
             }
+            if (fd == -999) {
+                WARN("resumeAndCopyToDeviceB cannot find fd");
+                exit(1);
+            }
 
             CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
             CUmemGenericAllocationHandle handle;
