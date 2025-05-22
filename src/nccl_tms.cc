@@ -52,6 +52,25 @@ void NcclTms::copyToHostAndReleaseB() {
     }
 }
 
+char* NcclTms::getRecords() {
+    const std::lock_guard<std::mutex> lock(primary_mutex_);
+
+    nlohmann::json output_json = nlohmann::json::array();
+
+    for (size_t i = 0; i < records_.size(); ++i) {
+        output_json.push_back({
+            {"i": i},
+            {"initialRawCuDesc": records_[i].initialRawCuDesc},
+            {"ipcMode": records_[i].ipcMode},
+        });
+    }
+
+    std::string message = output_json.dump();
+    char* result = new char[message.size() + 1];
+    std::strcpy(result, message.c_str());
+    return result;
+}
+
 char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
@@ -145,6 +164,7 @@ extern "C" {
 
 void nccl_tms_copyToHostAndReleaseA() { NcclTms::instance().copyToHostAndReleaseA(); }
 void nccl_tms_copyToHostBndReleaseB() { NcclTms::instance().copyToHostBndReleaseB(); }
+char* nccl_tms_getRecords() { NcclTms::instance().getRecords(); }
 char* nccl_tms_resumeAndCopyToDeviceA(const char* input_str) { return NcclTms::instance().resumeAndCopyToDeviceA(input_str); }
 void nccl_tms_resumeBndCopyToDeviceB(const char* input_str) { NcclTms::instance().resumeAndCopyToDeviceB(input_str); }
 
