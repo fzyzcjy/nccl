@@ -8,10 +8,10 @@ NcclTms& NcclTms::instance() {
     return instance;
 }
 
-void NcclTms::registerAlloc(void* ptr, size_t size, uint64_t rawIpcDesc, NcclTmsIpcMode ipcMode) {
+void NcclTms::registerAlloc(void* ptr, size_t size, uint64_t rawCuDesc, NcclTmsIpcMode ipcMode) {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
-    records_.push_back(NcclTmsRecord{ptr, size, rawIpcDesc, ipcMode});
+    records_.push_back(NcclTmsRecord{ptr, size, rawCuDesc, ipcMode});
 }
 
 void NcclTms::copyToHostAndReleaseA() {
