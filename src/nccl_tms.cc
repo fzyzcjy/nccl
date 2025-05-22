@@ -219,10 +219,11 @@ __attribute__((visibility("default"))) void nccl_tms_copyToHostAndReleaseB() { N
 __attribute__((visibility("default"))) char* nccl_tms_getRecords() { return NcclTms::instance().getRecords(); }
 __attribute__((visibility("default"))) char* nccl_tms_resumeAndCopyToDeviceA(const char* input_str) { return NcclTms::instance().resumeAndCopyToDeviceA(input_str); }
 __attribute__((visibility("default"))) void nccl_tms_resumeAndCopyToDeviceB(const char* input_str) { NcclTms::instance().resumeAndCopyToDeviceB(input_str); }
-__attribute__((visibility("default"))) void nccl_tms_freeDynamicString(char* ptr) {
-    WARN("nccl_tms_freeDynamicString START ptr=%p", ptr);
-    delete[] ptr;
-    WARN("nccl_tms_freeDynamicString END");
-}
+
+//__attribute__((visibility("default"))) void nccl_tms_freeDynamicString(char* ptr) {
+//    WARN("nccl_tms_freeDynamicString START ptr=%p", ptr);
+//    delete[] ptr;
+//    WARN("nccl_tms_freeDynamicString END");
+//}
 
 }
