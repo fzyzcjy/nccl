@@ -51,9 +51,9 @@ void NcclTms::copyToHostAndReleaseB() {
 }
 
 char* NcclTms::resumeAndCopyToDeviceA() {
-    nlohmann::json output_json = nlohmann::json::array();
-
     const std::lock_guard<std::mutex> lock(primary_mutex_);
+
+    nlohmann::json output_json = nlohmann::json::array();
 
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
@@ -100,7 +100,7 @@ char* NcclTms::resumeAndCopyToDeviceA() {
                 CUCHECK(cuMemExportToShareableHandle(&fd, handle, type, 0));
             }
 
-            output_json.push_back({{"TODO", TODO}, {"fd", fd}});
+            output_json.push_back({{"initialRawCuDesc", initialRawCuDesc}, {"fd", fd}});
         }
     }
 
@@ -110,13 +110,24 @@ char* NcclTms::resumeAndCopyToDeviceA() {
     return result;
 }
 
-void NcclTms::resumeAndCopyToDeviceB() {
+void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
+
+    nlohmann::json input_json = nlohmann::json::parse(input_str);
 
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
             // ref: ncclP2pImportShareableBuffer
-            int fd = TODO_get;
+
+            int fd = -999;
+            {
+                for (const auto& input_item : input_json) {
+                    if (item.contains("initialRawCuDesc") && item["initialRawCuDesc"] == records_[i].initialRawCuDesc) {
+                        fd = item["fd"];
+                        break;
+                    }
+                }
+            }
 
             CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
             CUmemGenericAllocationHandle handle;
