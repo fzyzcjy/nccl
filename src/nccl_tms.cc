@@ -2,6 +2,8 @@
 #include "utils.h"
 #include "nccl_tms.h"
 #include "json.hpp"
+#include <sys/syscall.h>
+#include <unistd.h>
 
 // NOTE MODIFIED from CUCHECK
 #define CUCHECKEXIT(cmd) do {				      \
@@ -163,6 +165,7 @@ char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
             for (int fd_repeat_index = 0; fd_repeat_index < fd_repeat_num; ++fd_repeat_index) {
                 int fd = -1;
                 CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
+                // TODO check whether need to close this fd at sender side
                 CUCHECKEXIT(cuMemExportToShareableHandle(&fd, handle, type, 0));
                 fd_arr.push_back(fd);
             }
@@ -190,13 +193,18 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
             size_t alignedSize = alignSizeByGranularity(records_[i].size, prop);
 
             // ref: ncclP2pImportShareableBuffer
-            int fd = input_json[i]["fd"];
-            WARN("NcclTms::resumeAndCopyToDeviceB cuMemMap i=%d fd=%d", (int) i, fd);
+            int fdInSenderProcess = input_json[i]["fd"];
+            // https://stackoverflow.com/questions/2358684/can-i-share-a-file-descriptor-to-another-process-on-linux-or-are-they-local-to-t
+            int senderPidFd = syscall(SYS_pidfd_open, senderPid, 0);
+            int fdInLocalProcess = syscall(SYS_pidfd_getfd, senderPidFd, fdInSenderProcess, 0);
+            WARN("NcclTms::resumeAndCopyToDeviceB cuMemMap i=%d fdInSenderProcess=%d fdInLocalProcess=%d", (int) i, fdInSenderProcess, fdInLocalProcess);
 
             CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
             CUmemGenericAllocationHandle handle;
-            CUCHECKEXIT(cuMemImportFromShareableHandle(&handle, (void *)(uintptr_t)fd, type));
-            (void) close(fd);
+            CUCHECKEXIT(cuMemImportFromShareableHandle(&handle, (void *)(uintptr_t)fdInLocalProcess, type));
+
+            (void) close(fdInLocalProcess);
+            (void) close(senderPidFd); // can optimize (not open-close every time)
 
             CUCHECKEXIT(cuMemMap((CUdeviceptr)records_[i].ptr, alignedSize, /* offset */ 0, handle, /* flags */ 0));
         }
