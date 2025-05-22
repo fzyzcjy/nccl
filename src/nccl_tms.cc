@@ -193,7 +193,10 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
             size_t alignedSize = alignSizeByGranularity(records_[i].size, prop);
 
             // ref: ncclP2pImportShareableBuffer
-            int fdInSenderProcess = input_json[i]["fd"];
+
+            int fdInSenderProcess = input_json[i]["fd_in_sender_process"];
+            int senderPid = input_json[i]["sender_pid"];
+
             // https://stackoverflow.com/questions/2358684/can-i-share-a-file-descriptor-to-another-process-on-linux-or-are-they-local-to-t
             int senderPidFd = syscall(SYS_pidfd_open, senderPid, 0);
             int fdInLocalProcess = syscall(SYS_pidfd_getfd, senderPidFd, fdInSenderProcess, 0);
