@@ -96,7 +96,7 @@ void NcclTms::resumeAndCopyToDeviceA() {
                 CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
                 CUCHECK(cuMemExportToShareableHandle(&fd, handle, type, 0));
             }
-            
+
             TODO_store_fd;
         }
     }
@@ -107,7 +107,13 @@ void NcclTms::resumeAndCopyToDeviceB() {
 
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
-            TODO;
+            // ref: ncclP2pImportShareableBuffer
+            int fd = TODO_get;
+
+            CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
+            CUmemGenericAllocationHandle handle;
+            CUCHECK(cuMemImportFromShareableHandle(&handle, (void *)(uintptr_t)fd, type));
+            (void) close(fd);
         }
     }
 
