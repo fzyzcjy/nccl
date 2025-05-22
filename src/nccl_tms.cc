@@ -52,6 +52,14 @@ void NcclTms::copyToHostAndReleaseB() {
     }
 }
 
+const char* ipcModeToString(NcclTmsIpcMode ipc_mode) {
+  switch (ipc_mode) {
+    case NcclTmsIpcMode::EXPORTER: return "EXPORTER";
+    case NcclTmsIpcMode::IMPORTER: return "IMPORTER";
+    default: exit(1);
+  }
+}
+
 char* NcclTms::getRecords() {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
