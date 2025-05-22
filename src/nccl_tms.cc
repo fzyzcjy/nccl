@@ -12,6 +12,8 @@ NcclTms& NcclTms::instance() {
 void NcclTms::registerAlloc(void* ptr, size_t size, uint64_t rawCuDesc, NcclTmsIpcMode ipcMode) {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
+    TODO_log_everywhere
+
     records_.push_back(NcclTmsRecord{ptr, size, rawCuDesc, ipcMode});
 }
 
