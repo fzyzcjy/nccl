@@ -117,6 +117,7 @@ char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
             // ref: ncclCuMemAlloc
             CUmemGenericAllocationHandle handle;
             {
+                size_t size = records_[i].size;
                 size_t granularity = 0;
                 CUdevice currentDev;
                 CUmemAllocationProp prop = {};
