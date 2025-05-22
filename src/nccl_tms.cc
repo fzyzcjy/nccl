@@ -98,12 +98,12 @@ void NcclTms::copyToHostAndReleaseB() {
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
             CUmemAllocationProp prop = getCUmemAllocationProp();
-            size_t size = alignSizeByGranularity(records_[i].size, prop);
+            size_t alignedSize = alignSizeByGranularity(records_[i].size, prop);
 
             CUmemGenericAllocationHandle handle;
             CUCHECKEXIT(cuMemRetainAllocationHandle(&handle, records_[i].ptr));
 
-            CUCHECKEXIT(cuMemUnmap((CUdeviceptr)records_[i].ptr, size));
+            CUCHECKEXIT(cuMemUnmap((CUdeviceptr)records_[i].ptr, alignedSize));
             CUCHECKEXIT(cuMemRelease(handle));
         }
     }
@@ -151,10 +151,10 @@ char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
             CUmemGenericAllocationHandle handle;
             {
                 CUmemAllocationProp prop = getCUmemAllocationProp();
-                size_t size = alignSizeByGranularity(records_[i].size, prop);
+                size_t alignedSize = alignSizeByGranularity(records_[i].size, prop);
                 /* Allocate the physical memory on the device */
-                CUCHECKEXIT(cuMemCreate(&handle, size, &prop, 0));
-                CUCHECKEXIT(cuMemMap((CUdeviceptr)records_[i].ptr, records_[i].size, 0, handle, 0));
+                CUCHECKEXIT(cuMemCreate(&handle, alignedSize, &prop, 0));
+                CUCHECKEXIT(cuMemMap((CUdeviceptr)records_[i].ptr, alignedSize, 0, handle, 0));
             }
 
             // ref: proxyGetFd
@@ -186,6 +186,9 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
     WARN("NcclTms::resumeAndCopyToDeviceB stage resume");
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
+            CUmemAllocationProp prop = getCUmemAllocationProp();
+            size_t alignedSize = alignSizeByGranularity(records_[i].size, prop);
+
             // ref: ncclP2pImportShareableBuffer
             int fd = input_json[i]["fd"];
             WARN("NcclTms::resumeAndCopyToDeviceB cuMemMap i=%d fd=%d", (int) i, fd);
@@ -195,7 +198,7 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
             CUCHECKEXIT(cuMemImportFromShareableHandle(&handle, (void *)(uintptr_t)fd, type));
             (void) close(fd);
 
-            CUCHECKEXIT(cuMemMap((CUdeviceptr)records_[i].ptr, records_[i].size, /* offset */ 0, handle, /* flags */ 0));
+            CUCHECKEXIT(cuMemMap((CUdeviceptr)records_[i].ptr, alignedSize, /* offset */ 0, handle, /* flags */ 0));
         }
     }
 
