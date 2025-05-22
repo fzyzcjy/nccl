@@ -54,8 +54,48 @@ void NcclTms::resumeAndCopyToDeviceA() {
 
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
-            // ref: ncclP2pAllocateShareableBuffer
-            TODO;
+            // ref: ncclP2pAllocateShareableBuffer,
+
+            // ref: ncclCuMemAlloc
+            {
+                size_t granularity = 0;
+                CUdevice currentDev;
+                CUmemAllocationProp prop = {};
+                CUmemAccessDesc accessDesc = {};
+                CUmemGenericAllocationHandle handle;
+                CUmemAllocationHandleType type = ncclCuMemHandleType;
+                int cudaDev;
+                int flag = 0;
+                CUDACHECK(cudaGetDevice(&cudaDev));
+                CUCHECK(cuDeviceGet(&currentDev, cudaDev));
+                prop.type = CU_MEM_ALLOCATION_TYPE_PINNED;
+                prop.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
+                prop.requestedHandleTypes = type;
+                prop.location.id = currentDev;
+                // Query device to see if RDMA support is available
+                CUCHECK(cuDeviceGetAttribute(&flag, CU_DEVICE_ATTRIBUTE_GPU_DIRECT_RDMA_SUPPORTED, currentDev));
+                if (flag) prop.allocFlags.gpuDirectRDMACapable = 1;
+                CUCHECK(cuMemGetAllocationGranularity(&granularity, &prop, CU_MEM_ALLOC_GRANULARITY_MINIMUM));
+                ALIGN_SIZE(size, granularity);
+                /* Allocate the physical memory on the device */
+                CUCHECK(cuMemCreate(&handle, size, &prop, 0));
+                /* Reserve a virtual address range */
+                CUCHECK(cuMemAddressReserve((CUdeviceptr *)ptr, size, granularity, 0, 0));
+                /* Map the virtual address range to the physical allocation */
+                CUCHECK(cuMemMap((CUdeviceptr)*ptr, size, 0, handle, 0));
+                /* Now allow RW access to the newly mapped memory */
+                accessDesc.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
+                accessDesc.location.id = currentDev;
+                accessDesc.flags = CU_MEM_ACCESS_FLAGS_PROT_READWRITE;
+                CUCHECK(cuMemSetAccess((CUdeviceptr)*ptr, size, &accessDesc, 1));
+            }
+
+            // ref: proxyGetFd
+            {
+                CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
+                int fd = -1;
+                CUCHECK(cuMemExportToShareableHandle(&fd, handle, type, 0));
+            }
         }
     }
 }
