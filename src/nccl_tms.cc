@@ -155,8 +155,8 @@ extern "C" {
 
 void nccl_tms_copyToHostAndReleaseA() { NcclTms::instance().copyToHostAndReleaseA(); }
 void nccl_tms_copyToHostBndReleaseB() { NcclTms::instance().copyToHostBndReleaseB(); }
-void nccl_tms_resumeAndCopyToDeviceA() { NcclTms::instance().resumeAndCopyToDeviceA(); }
-void nccl_tms_resumeBndCopyToDeviceB() { NcclTms::instance().resumeAndCopyToDeviceB(); }
+char* nccl_tms_resumeAndCopyToDeviceA() { return NcclTms::instance().resumeAndCopyToDeviceA(); }
+void nccl_tms_resumeBndCopyToDeviceB(const char* input_str) { NcclTms::instance().resumeAndCopyToDeviceB(input_str); }
 
 void nccl_tms_freeDynamicString(char* ptr) { delete[] ptr; }
 
