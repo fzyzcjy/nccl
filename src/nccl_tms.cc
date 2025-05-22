@@ -20,10 +20,10 @@ void NcclTms::copyToHostAndReleaseA() {
     // copy to host
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
-            if (metadata.cpuBackup == nullptr) {
-                CUCHECK(cudaMallocHost(&metadata.cpuBackup, metadata.size));
+            if (records_[i].cpuBackup == nullptr) {
+                CUCHECK(cudaMallocHost(&records_[i].cpuBackup, records_[i].size));
             }
-            CUCHECK(cudaMemcpyAsync(metadata.cpuBackup, ptr, metadata.size, cudaMemcpyDeviceToHost));
+            CUCHECK(cudaMemcpyAsync(records_[i].cpuBackup, ptr, records_[i].size, cudaMemcpyDeviceToHost));
         }
     }
 
@@ -72,7 +72,7 @@ void NcclTms::resumeAndCopyToDeviceB() {
     // copy to device
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
-            CUCHECK(cudaMemcpyAsync(ptr, metadata.cpuBackup, metadata.size, cudaMemcpyHostToDevice));
+            CUCHECK(cudaMemcpyAsync(records_[i].ptr, records_[i].cpuBackup, records_[i].size, cudaMemcpyHostToDevice));
             // TODO free host memory later
         }
     }
