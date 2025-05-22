@@ -56,7 +56,7 @@ void wrappedCuMemSetAccess(void* ptr, size_t size) {
     accessDesc.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
     accessDesc.location.id = currentDev;
     accessDesc.flags = CU_MEM_ACCESS_FLAGS_PROT_READWRITE;
-    CUCHECKEXIT(cuMemSetAccess((CUdeviceptr)*ptr, size, &accessDesc, 1));
+    CUCHECKEXIT(cuMemSetAccess((CUdeviceptr)ptr, size, &accessDesc, 1));
 }
 
 // ref: ncclCuMemAlloc
