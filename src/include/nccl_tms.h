@@ -20,7 +20,8 @@ public:
     void registerAlloc(void* ptr, size_t size, uint64_t rawIpcDesc, NcclTmsIpcMode ipcMode);
 
 private:
-    std::mutex allocator_metadata_mutex_;
+    // TODO improve
+    std::mutex primary_mutex_;
     std::vector<NcclTmsRecord> records_;
 };
 
