@@ -145,6 +145,7 @@ const char* ipcModeToString(NcclTmsIpcMode ipc_mode) {
   switch (ipc_mode) {
     case NcclTmsIpcMode::EXPORTER: return "EXPORTER";
     case NcclTmsIpcMode::IMPORTER: return "IMPORTER";
+    case NcclTmsIpcMode::LOCAL: return "LOCAL";
     default: exit(1);
   }
 }
