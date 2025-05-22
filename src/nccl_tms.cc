@@ -67,5 +67,9 @@ void NcclTms::resumeAndCopyToDeviceB() {
     }
 
     // copy to device
-    TODO;
+    for (size_t i = 0; i < records_.size(); ++i) {
+        if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
+            TODO;
+        }
+    }
 }
