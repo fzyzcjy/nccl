@@ -56,7 +56,7 @@ void NcclTms::copyToHostAndReleaseA() {
     WARN("NcclTms::copyToHostAndReleaseA stage release");
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
-            CUCHECKEXIT(cuMemUnmap(records_[i].ptr, records_[i].size));
+            CUCHECKEXIT(cuMemUnmap((CUdeviceptr)records_[i].ptr, records_[i].size));
         }
     }
 }
@@ -70,7 +70,7 @@ void NcclTms::copyToHostAndReleaseB() {
             CUmemGenericAllocationHandle handle;
             CUCHECKEXIT(cuMemRetainAllocationHandle(&handle, records_[i].ptr));
 
-            CUCHECKEXIT(cuMemUnmap(records_[i].ptr, records_[i].size));
+            CUCHECKEXIT(cuMemUnmap((CUdeviceptr)records_[i].ptr, records_[i].size));
             CUCHECKEXIT(cuMemRelease(handle));
         }
     }
@@ -187,7 +187,7 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
             CUCHECKEXIT(cuMemImportFromShareableHandle(&handle, (void *)(uintptr_t)fd, type));
             (void) close(fd);
 
-            CUCHECKEXIT(cuMemMap(records_[i].ptr, records_[i].size, /* offset */ 0, handle, /* flags */ 0));
+            CUCHECKEXIT(cuMemMap((CUdeviceptr)records_[i].ptr, records_[i].size, /* offset */ 0, handle, /* flags */ 0));
         }
     }
 
