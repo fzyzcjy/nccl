@@ -79,6 +79,8 @@ ncclResult_t ncclRealloc(T** ptr, size_t oldNelem, size_t nelem) {
 #include "cudawrap.h"
 
 static inline ncclResult_t ncclCuMemAlloc(void **ptr, CUmemGenericAllocationHandle *handlep, size_t size) {
+  size_t originalSize = size;
+
   ncclResult_t result = ncclSuccess;
   size_t granularity = 0;
   CUdevice currentDev;
@@ -112,6 +114,9 @@ static inline ncclResult_t ncclCuMemAlloc(void **ptr, CUmemGenericAllocationHand
   CUCHECK(cuMemSetAccess((CUdeviceptr)*ptr, size, &accessDesc, 1));
   if (handlep) *handlep = handle;
   TRACE(NCCL_ALLOC, "CuMem Alloc Size %zi pointer %p handle %llx", size, *ptr, handle);
+
+  NcclTms::instance().registerAlloc((void *)ptr, originalSize, 0, handle, NcclTmsIpcMode::LOCAL);
+
   return result;
 }
 
