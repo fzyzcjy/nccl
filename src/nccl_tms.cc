@@ -97,7 +97,7 @@ void NcclTms::registerDealloc(void* ptr) {
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ptr == ptr) {
             WARN("NcclTms::registerDealloc find i=%d", (int) i);
-            records_.erase(vec.begin() + i);
+            records_.erase(records_.begin() + i);
             break; // be careful about indices after this
         }
     }
@@ -152,8 +152,14 @@ void NcclTms::copyToHostAndReleaseB() {
             CUmemAllocationProp prop = getCUmemAllocationProp();
             size_t alignedSize = alignSizeByGranularity(records_[i].size, prop);
 
+            WARN("NcclTms::copyToHostAndReleaseB cuMemUnmap i=%d ptr=%p size=%d alignedSize=%d",
+                (int) i, records_[i].ptr, records_[i].size, alignedSize);
             CUCHECKEXIT(cuMemUnmap((CUdeviceptr)records_[i].ptr, alignedSize));
+
+            WARN("NcclTms::copyToHostAndReleaseB cuMemRelease initialHandle=%ld",
+                (uint64_t) records_[i].initialHandle);
             CUCHECKEXIT(cuMemRelease(records_[i].initialHandle));
+
             exporterSizeSum += alignedSize;
         }
     }
