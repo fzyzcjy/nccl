@@ -84,7 +84,7 @@ void NcclTms::setThreadLocalEnable(bool enable) {
 void NcclTms::registerAlloc(void* ptr, size_t size, uint64_t rawCuDesc, CUmemGenericAllocationHandle handle, NcclTmsIpcMode ipcMode) {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
-    WARN("NcclTms::registerAlloc enable=%d ptr=%p, size=%zu, rawCuDesc=%lu, ipcMode=%d", (int) nccl_tms_enable_, ptr, size, rawCuDesc, static_cast<int>(ipcMode));
+    WARN("NcclTms::registerAlloc enable=%d ptr=%p, size=%zu, rawCuDesc=%lu, handle=%lu, ipcMode=%d", (int) nccl_tms_enable_, ptr, size, rawCuDesc, (uint64_t) handle, static_cast<int>(ipcMode));
     if (nccl_tms_enable_) {
         records_.push_back(NcclTmsRecord{ptr, size, rawCuDesc, handle, ipcMode});
     }
