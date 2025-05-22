@@ -94,13 +94,12 @@ char* NcclTms::resumeAndCopyToDeviceA() {
             }
 
             // ref: proxyGetFd
-            int fd = -1;
-            {
+            for (int fd_repeat_index = 0; fd_repeat_index < TODO; ++fd_repeat_index) {
+                int fd = -1;
                 CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
                 CUCHECK(cuMemExportToShareableHandle(&fd, handle, type, 0));
+                output_json.push_back({{"i", i}, {"fd_repeat_index", fd_repeat_index}, {"fd", fd}});
             }
-
-            output_json.push_back({{"initialRawCuDesc", initialRawCuDesc}, {"fd", fd}});
         }
     }
 
