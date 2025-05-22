@@ -62,7 +62,7 @@ void NcclTms::resumeAndCopyToDeviceA() {
                 size_t granularity = 0;
                 CUdevice currentDev;
                 CUmemAllocationProp prop = {};
-                CUmemAccessDesc accessDesc = {};
+                // CUmemAccessDesc accessDesc = {};
                 CUmemAllocationHandleType type = ncclCuMemHandleType;
                 int cudaDev;
                 int flag = 0;
@@ -79,15 +79,15 @@ void NcclTms::resumeAndCopyToDeviceA() {
                 ALIGN_SIZE(size, granularity);
                 /* Allocate the physical memory on the device */
                 CUCHECK(cuMemCreate(&handle, size, &prop, 0));
-                /* Reserve a virtual address range */
-                CUCHECK(cuMemAddressReserve((CUdeviceptr *)ptr, size, granularity, 0, 0));
+                // /* Reserve a virtual address range */
+                // CUCHECK(cuMemAddressReserve((CUdeviceptr *)ptr, size, granularity, 0, 0));
                 /* Map the virtual address range to the physical allocation */
                 CUCHECK(cuMemMap((CUdeviceptr)*ptr, size, 0, handle, 0));
-                /* Now allow RW access to the newly mapped memory */
-                accessDesc.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
-                accessDesc.location.id = currentDev;
-                accessDesc.flags = CU_MEM_ACCESS_FLAGS_PROT_READWRITE;
-                CUCHECK(cuMemSetAccess((CUdeviceptr)*ptr, size, &accessDesc, 1));
+                // /* Now allow RW access to the newly mapped memory */
+                // accessDesc.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
+                // accessDesc.location.id = currentDev;
+                // accessDesc.flags = CU_MEM_ACCESS_FLAGS_PROT_READWRITE;
+                // CUCHECK(cuMemSetAccess((CUdeviceptr)*ptr, size, &accessDesc, 1));
             }
 
             // ref: proxyGetFd
