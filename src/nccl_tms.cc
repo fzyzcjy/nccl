@@ -25,16 +25,20 @@
     }                                                       \
 } while(false)
 
-// ref: ncclCuMemAlloc
-CUmemAllocationProp getCUmemAllocationProp() {
+CUdevice getCurrentDev() {
     CUdevice currentDev;
-    CUmemAllocationProp prop = {};
-    // CUmemAccessDesc accessDesc = {};
-    CUmemAllocationHandleType type = ncclCuMemHandleType;
     int cudaDev;
-    int flag = 0;
     CUDACHECKEXIT(cudaGetDevice(&cudaDev));
     CUCHECKEXIT(cuDeviceGet(&currentDev, cudaDev));
+    return currentDev;
+}
+
+// ref: ncclCuMemAlloc
+CUmemAllocationProp getCUmemAllocationProp() {
+    CUdevice currentDev = getCurrentDev();
+    CUmemAllocationProp prop = {};
+    CUmemAllocationHandleType type = ncclCuMemHandleType;
+    int flag = 0;
     prop.type = CU_MEM_ALLOCATION_TYPE_PINNED;
     prop.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
     prop.requestedHandleTypes = type;
