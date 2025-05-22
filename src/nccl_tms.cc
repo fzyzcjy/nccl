@@ -20,6 +20,7 @@ void NcclTms::copyToHostAndReleaseA() {
     TODO
 
     // release
+    // TODO improve all code, e.g. the `[i]
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
             CUCHECK(cuMemUnmap(records_[i].ptr, records_[i].size));
@@ -32,8 +33,11 @@ void NcclTms::copyToHostAndReleaseB() {
 
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
+            CUmemGenericAllocationHandle handle;
+            CUCHECK(cuMemRetainAllocationHandle(&handle, records_[i].ptr));
+
             CUCHECK(cuMemUnmap(records_[i].ptr, records_[i].size));
-            CUCHECK(cuMemRelease(TODO));
+            CUCHECK(cuMemRelease(handle));
         }
     }
 }
