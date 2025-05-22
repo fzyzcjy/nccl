@@ -82,7 +82,7 @@ void NcclTms::resumeAndCopyToDeviceA() {
                 // /* Reserve a virtual address range */
                 // CUCHECK(cuMemAddressReserve((CUdeviceptr *)ptr, size, granularity, 0, 0));
                 /* Map the virtual address range to the physical allocation */
-                CUCHECK(cuMemMap((CUdeviceptr)*ptr, size, 0, handle, 0));
+                CUCHECK(cuMemMap((CUdeviceptr)records_[i].ptr, size, 0, handle, 0));
                 // /* Now allow RW access to the newly mapped memory */
                 // accessDesc.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
                 // accessDesc.location.id = currentDev;
@@ -114,6 +114,8 @@ void NcclTms::resumeAndCopyToDeviceB() {
             CUmemGenericAllocationHandle handle;
             CUCHECK(cuMemImportFromShareableHandle(&handle, (void *)(uintptr_t)fd, type));
             (void) close(fd);
+
+            CUCHECK(cuMemMap(records_[i].ptr, records_[i].size, /* offset */ 0, handle, /* flags */ 0));
         }
     }
 
