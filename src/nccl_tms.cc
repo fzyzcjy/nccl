@@ -96,7 +96,10 @@ void NcclTms::copyToHostAndReleaseA() {
     // copy to host
     WARN("NcclTms::copyToHostAndReleaseA stage copy");
     for (size_t i = 0; i < records_.size(); ++i) {
-        if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
+        if (
+            (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) ||
+            (records_[i].ipcMode == NcclTmsIpcMode::LOCAL)
+        ) {
             if (records_[i].cpuBackup == nullptr) {
                 CUDACHECKEXIT(cudaMallocHost(&records_[i].cpuBackup, records_[i].size));
             }
@@ -129,7 +132,10 @@ void NcclTms::copyToHostAndReleaseB() {
     WARN("NcclTms::copyToHostAndReleaseA stage release");
     int exporterSizeSum = 0;
     for (size_t i = 0; i < records_.size(); ++i) {
-        if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
+        if (
+            (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) ||
+            (records_[i].ipcMode == NcclTmsIpcMode::LOCAL)
+        ) {
             CUmemAllocationProp prop = getCUmemAllocationProp();
             size_t alignedSize = alignSizeByGranularity(records_[i].size, prop);
 
@@ -177,7 +183,10 @@ char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
 
     WARN("NcclTms::resumeAndCopyToDeviceA stage resume");
     for (size_t i = 0; i < records_.size(); ++i) {
-        if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
+        if (
+            (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) ||
+            (records_[i].ipcMode == NcclTmsIpcMode::LOCAL)
+        ) {
             // ref: ncclP2pAllocateShareableBuffer,
 
             // ref: ncclCuMemAlloc
@@ -192,16 +201,20 @@ char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
             }
 
             // ref: proxyGetFd
-            int fd_repeat_num = input_json[i]["fd_repeat_num"];
-            std::vector<int> fd_arr;
-            for (int fd_repeat_index = 0; fd_repeat_index < fd_repeat_num; ++fd_repeat_index) {
-                int fd = -1;
-                CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
-                // TODO check whether need to close this fd at sender side
-                CUCHECKEXIT(cuMemExportToShareableHandle(&fd, handle, type, 0));
-                fd_arr.push_back(fd);
+            if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
+                int fd_repeat_num = input_json[i]["fd_repeat_num"];
+                std::vector<int> fd_arr;
+                for (int fd_repeat_index = 0; fd_repeat_index < fd_repeat_num; ++fd_repeat_index) {
+                    int fd = -1;
+                    CUmemAllocationHandleType type = CU_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR;
+                    // TODO check whether need to close this fd at sender side
+                    CUCHECKEXIT(cuMemExportToShareableHandle(&fd, handle, type, 0));
+                    fd_arr.push_back(fd);
+                }
+                output_json.push_back({{"fd_arr", fd_arr}});
+            } else {
+                output_json.push_back({});
             }
-            output_json.push_back({{"fd_arr", fd_arr}});
         } else {
             output_json.push_back({});
         }
@@ -249,7 +262,10 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
     // copy to device
     WARN("NcclTms::resumeAndCopyToDeviceB stage copy");
     for (size_t i = 0; i < records_.size(); ++i) {
-        if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
+        if (
+            (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) ||
+            (records_[i].ipcMode == NcclTmsIpcMode::LOCAL)
+        ) {
             WARN("NcclTms::resumeAndCopyToDeviceB cudaMemcpy i=%d ptr=%p cpuBackup=%p size=%d",
                 (int) i, records_[i].ptr, records_[i].cpuBackup, (int) records_[i].size);
             CUDACHECKEXIT(cudaMemcpyAsync(records_[i].ptr, records_[i].cpuBackup, records_[i].size, cudaMemcpyHostToDevice));
