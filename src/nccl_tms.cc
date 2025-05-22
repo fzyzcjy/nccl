@@ -123,6 +123,13 @@ CUmemAllocationProp getCUmemAllocationProp() {
     return prop;
 }
 
+size_t alignSizeByGranularity(size_t size, CUmemAllocationProp prop) {
+    size_t granularity = 0;
+    CUCHECKEXIT(cuMemGetAllocationGranularity(&granularity, &prop, CU_MEM_ALLOC_GRANULARITY_MINIMUM));
+    ALIGN_SIZE(size, granularity);
+    return size;
+}
+
 char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
@@ -137,10 +144,8 @@ char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
             // ref: ncclCuMemAlloc
             CUmemGenericAllocationHandle handle;
             {
-                size_t size = records_[i].size;
-                size_t granularity = 0;
-                CUCHECKEXIT(cuMemGetAllocationGranularity(&granularity, &prop, CU_MEM_ALLOC_GRANULARITY_MINIMUM));
-                ALIGN_SIZE(size, granularity);
+                CUmemAllocationProp prop = getCUmemAllocationProp();
+                size_t size = alignSizeByGranularity(records_[i].size, prop);
                 /* Allocate the physical memory on the device */
                 CUCHECKEXIT(cuMemCreate(&handle, size, &prop, 0));
                 CUCHECKEXIT(cuMemMap((CUdeviceptr)records_[i].ptr, records_[i].size, 0, handle, 0));
