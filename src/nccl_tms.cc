@@ -45,7 +45,12 @@ void NcclTms::copyToHostAndReleaseB() {
 void NcclTms::resumeAndCopyToDeviceA() {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
-    TODO;
+    for (size_t i = 0; i < records_.size(); ++i) {
+        if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
+            // ref: ncclP2pAllocateShareableBuffer
+            TODO;
+        }
+    }
 }
 
 void NcclTms::resumeAndCopyToDeviceB() {
