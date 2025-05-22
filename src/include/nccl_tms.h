@@ -7,6 +7,7 @@
 enum NcclTmsIpcMode {
     EXPORTER,
     IMPORTER,
+    LOCAL,
 };
 
 struct NcclTmsRecord {
