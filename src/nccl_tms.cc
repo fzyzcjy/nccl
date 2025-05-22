@@ -49,6 +49,17 @@ CUmemAllocationProp getCUmemAllocationProp() {
     return prop;
 }
 
+// ref: ncclCuMemAlloc
+void wrappedCuMemSetAccess(void* ptr, size_t size) {
+    CUdevice currentDev = getCurrentDev();
+    CUmemAccessDesc accessDesc = {};
+    accessDesc.location.type = CU_MEM_LOCATION_TYPE_DEVICE;
+    accessDesc.location.id = currentDev;
+    accessDesc.flags = CU_MEM_ACCESS_FLAGS_PROT_READWRITE;
+    CUCHECKEXIT(cuMemSetAccess((CUdeviceptr)*ptr, size, &accessDesc, 1));
+}
+
+// ref: ncclCuMemAlloc
 size_t alignSizeByGranularity(size_t size, CUmemAllocationProp prop) {
     size_t granularity = 0;
     CUCHECKEXIT(cuMemGetAllocationGranularity(&granularity, &prop, CU_MEM_ALLOC_GRANULARITY_MINIMUM));
