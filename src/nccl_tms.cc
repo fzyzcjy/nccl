@@ -12,8 +12,7 @@ NcclTms& NcclTms::instance() {
 void NcclTms::registerAlloc(void* ptr, size_t size, uint64_t rawCuDesc, NcclTmsIpcMode ipcMode) {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
-    TODO_log_everywhere
-
+    WARN("NcclTms::registerAlloc ptr=%p, size=%zu, rawCuDesc=%lu, ipcMode=%d", ptr, size, rawCuDesc, static_cast<int>(ipcMode));
     records_.push_back(NcclTmsRecord{ptr, size, rawCuDesc, ipcMode});
 }
 
@@ -21,6 +20,7 @@ void NcclTms::copyToHostAndReleaseA() {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
     // copy to host
+    WARN("NcclTms::copyToHostAndReleaseA stage copy");
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
             if (records_[i].cpuBackup == nullptr) {
@@ -31,6 +31,7 @@ void NcclTms::copyToHostAndReleaseA() {
     }
 
     // TODO improve all code, e.g. the `[i]
+    WARN("NcclTms::copyToHostAndReleaseA stage release");
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
             CUCHECK(cuMemUnmap(records_[i].ptr, records_[i].size));
@@ -41,6 +42,7 @@ void NcclTms::copyToHostAndReleaseA() {
 void NcclTms::copyToHostAndReleaseB() {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
+    WARN("NcclTms::copyToHostAndReleaseA stage release");
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
             CUmemGenericAllocationHandle handle;
@@ -85,6 +87,7 @@ char* NcclTms::resumeAndCopyToDeviceA(const char* input_str) {
     nlohmann::json input_json = nlohmann::json::parse(input_str);
     nlohmann::json output_json = nlohmann::json::array();
 
+    WARN("NcclTms::resumeAndCopyToDeviceA stage resume");
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
             // ref: ncclP2pAllocateShareableBuffer,
@@ -149,6 +152,7 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
 
     nlohmann::json input_json = nlohmann::json::parse(input_str);
 
+    WARN("NcclTms::resumeAndCopyToDeviceB stage resume");
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
             // ref: ncclP2pImportShareableBuffer
@@ -164,6 +168,7 @@ void NcclTms::resumeAndCopyToDeviceB(const char* input_str) {
     }
 
     // copy to device
+    WARN("NcclTms::resumeAndCopyToDeviceB stage copy");
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
             CUCHECK(cudaMemcpyAsync(records_[i].ptr, records_[i].cpuBackup, records_[i].size, cudaMemcpyHostToDevice));
