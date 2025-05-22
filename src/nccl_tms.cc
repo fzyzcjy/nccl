@@ -67,6 +67,8 @@ size_t alignSizeByGranularity(size_t size, CUmemAllocationProp prop) {
     return size;
 }
 
+static thread_local bool nccl_tms_enable_ = true;
+
 NcclTms::NcclTms() {}
 
 // 静态单例方法实现
@@ -75,11 +77,17 @@ NcclTms& NcclTms::instance() {
     return instance;
 }
 
+void NcclTms::setThreadLocalEnable(bool enable) {
+    nccl_tms_enable_ = enable;
+}
+
 void NcclTms::registerAlloc(void* ptr, size_t size, uint64_t rawCuDesc, NcclTmsIpcMode ipcMode) {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
-    WARN("NcclTms::registerAlloc ptr=%p, size=%zu, rawCuDesc=%lu, ipcMode=%d", ptr, size, rawCuDesc, static_cast<int>(ipcMode));
-    records_.push_back(NcclTmsRecord{ptr, size, rawCuDesc, ipcMode});
+    WARN("NcclTms::registerAlloc enable=%d ptr=%p, size=%zu, rawCuDesc=%lu, ipcMode=%d", (int) nccl_tms_enable_, ptr, size, rawCuDesc, static_cast<int>(ipcMode));
+    if (nccl_tms_enable_) {
+        records_.push_back(NcclTmsRecord{ptr, size, rawCuDesc, ipcMode});
+    }
 }
 
 void NcclTms::copyToHostAndReleaseA() {

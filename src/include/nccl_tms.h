@@ -27,6 +27,7 @@ public:
     char* getRecords();
     char* resumeAndCopyToDeviceA(const char* input_str);
     void resumeAndCopyToDeviceB(const char* input_str);
+    void setThreadLocalEnable(bool enable);
 
 private:
     // TODO improve
