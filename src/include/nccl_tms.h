@@ -10,7 +10,10 @@ enum NcclTmsIpcMode {
 };
 
 struct NcclTmsRecord {
-
+    void* ptr;
+    size_t size;
+    uint64_t rawIpcDesc;
+    NcclTmsIpcMode ipcMode;
 };
 
 class NcclTms {
