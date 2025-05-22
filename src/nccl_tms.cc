@@ -106,23 +106,28 @@ void NcclTms::copyToHostAndReleaseA() {
 
     // TODO improve all code, e.g. the `[i]
     WARN("NcclTms::copyToHostAndReleaseA stage release");
+    int importerSizeSum = 0;
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::IMPORTER) {
             CUmemAllocationProp prop = getCUmemAllocationProp();
-            size_t size = alignSizeByGranularity(records_[i].size, prop);
+            size_t alignedSize = alignSizeByGranularity(records_[i].size, prop);
 
-            CUCHECKEXIT(cuMemUnmap((CUdeviceptr)records_[i].ptr, size));
+            CUCHECKEXIT(cuMemUnmap((CUdeviceptr)records_[i].ptr, alignedSize));
 
             WARN("NcclTms::copyToHostAndReleaseA hack also release IMPORTER physical memory");
             CUCHECKEXIT(cuMemRelease(records_[i].initialHandle));
+
+            importerSizeSum += alignedSize;
         }
     }
+    WARN("NcclTms::copyToHostAndReleaseA importerSizeSum=%d", importerSizeSum);
 }
 
 void NcclTms::copyToHostAndReleaseB() {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
     WARN("NcclTms::copyToHostAndReleaseA stage release");
+    int exporterSizeSum = 0;
     for (size_t i = 0; i < records_.size(); ++i) {
         if (records_[i].ipcMode == NcclTmsIpcMode::EXPORTER) {
             CUmemAllocationProp prop = getCUmemAllocationProp();
@@ -130,8 +135,10 @@ void NcclTms::copyToHostAndReleaseB() {
 
             CUCHECKEXIT(cuMemUnmap((CUdeviceptr)records_[i].ptr, alignedSize));
             CUCHECKEXIT(cuMemRelease(records_[i].initialHandle));
+            exporterSizeSum += alignedSize;
         }
     }
+    WARN("NcclTms::copyToHostAndReleaseB exporterSizeSum=%d", exporterSizeSum);
 }
 
 const char* ipcModeToString(NcclTmsIpcMode ipc_mode) {
