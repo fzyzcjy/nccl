@@ -93,8 +93,13 @@ void NcclTms::registerAlloc(void* ptr, size_t size, uint64_t rawCuDesc, CUmemGen
 void NcclTms::registerDealloc(void* ptr) {
     const std::lock_guard<std::mutex> lock(primary_mutex_);
 
-    WARN("NcclTms::registerAlloc ptr=%p", ptr);
-    TODO;
+    WARN("NcclTms::registerDealloc ptr=%p", ptr);
+    for (size_t i = 0; i < records_.size(); ++i) {
+        if (records_[i].ptr == ptr) {
+            WARN("NcclTms::registerDealloc find i=%d", (int) i);
+            records_[i].deallocated = true;
+        }
+    }
 }
 
 void NcclTms::copyToHostAndReleaseA() {
