@@ -69,7 +69,7 @@ char* NcclTms::getRecords() {
         output_json.push_back({
             {"i": i},
             {"initialRawCuDesc": records_[i].initialRawCuDesc},
-            {"ipcMode": records_[i].ipcMode},
+            {"ipcMode": ipcModeToString(records_[i].ipcMode)},
         });
     }
 
